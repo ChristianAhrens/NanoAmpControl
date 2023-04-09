@@ -16,36 +16,25 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "MainComponent.h"
+#include "NanoAmpControlProcessor.h"
 
-#include "NanoAmpControl.h"
-
-#include <iOS_utils.h>
-
-MainComponent::MainComponent()
-    : juce::Component()
+namespace NanoAmpControl
 {
-    m_ampControl = std::make_unique<NanoAmpControl::NanoAmpControl>();
-    addAndMakeVisible(m_ampControl->getUIComponent());
 
-    setSize(450, 800);
-}
 
-MainComponent::~MainComponent()
+//==============================================================================
+NanoAmpControlProcessor::NanoAmpControlProcessor() :
+	juce::MessageListener()
 {
 }
 
-void MainComponent::resized()
+NanoAmpControlProcessor::~NanoAmpControlProcessor()
 {
-    auto safety = JUCEAppBasics::iOS_utils::getDeviceSafetyMargins();
-    auto safeBounds = getLocalBounds();
-    safeBounds.removeFromTop(safety._top);
-    safeBounds.removeFromBottom(safety._bottom);
-    safeBounds.removeFromLeft(safety._left);
-    safeBounds.removeFromRight(safety._right);
-
-    auto ampControlComponent = m_ampControl->getUIComponent();
-    if (ampControlComponent)
-        ampControlComponent->setBounds(safeBounds);
 }
 
+void NanoAmpControlProcessor::handleMessage (const Message& message)
+{
+}
+
+
+} // namespace SurroundFieldMixer

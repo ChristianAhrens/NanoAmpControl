@@ -6,7 +6,62 @@
               companyWebsite="https://github.com/ChristianAhrens/NanoAmpControl"
               headerPath="../../submodules/JUCE-AppBasics/Source/&#10;../../submodules/NanoOcp/Source/">
   <MAINGROUP id="cIkH3v" name="NanoAmpControl">
-    <GROUP id="{2F00D803-4C7B-B972-8DBF-6BAEC9E73388}" name="submodules"/>
+    <GROUP id="{2F00D803-4C7B-B972-8DBF-6BAEC9E73388}" name="submodules">
+      <GROUP id="{841D0E45-8D36-8B0B-5504-370165681A4C}" name="JUCE-AppBasics">
+        <GROUP id="{339E0567-3C54-9572-EFDD-3371D142B0E8}" name="submodules">
+          <GROUP id="{E2DCEBCD-866C-DB41-723B-2776F3B5B7AC}" name="ZeroconfSearcher">
+            <GROUP id="{23B68E44-1521-874B-2A74-99DF426FFCDE}" name="submodules">
+              <GROUP id="{1833DAEC-EB4A-9904-FC07-3867576D4847}" name="mdns">
+                <FILE id="tR05cO" name="mdns.c" compile="1" resource="0" file="submodules/JUCE-AppBasics/submodules/ZeroconfSearcher/submodules/mdns/mdns.c"/>
+                <FILE id="D16TsS" name="mdns.h" compile="0" resource="0" file="submodules/JUCE-AppBasics/submodules/ZeroconfSearcher/submodules/mdns/mdns.h"/>
+              </GROUP>
+            </GROUP>
+            <FILE id="zyT05b" name="ZeroconfSearcher.cpp" compile="1" resource="0"
+                  file="submodules/JUCE-AppBasics/submodules/ZeroconfSearcher/Source/ZeroconfSearcher.cpp"/>
+            <FILE id="ACFpO3" name="ZeroconfSearcher.h" compile="0" resource="0"
+                  file="submodules/JUCE-AppBasics/submodules/ZeroconfSearcher/Source/ZeroconfSearcher.h"/>
+          </GROUP>
+        </GROUP>
+        <GROUP id="{3B5186B0-4250-6DC5-EAB7-7BB93E12C508}" name="Resources">
+          <GROUP id="{BE5AB823-4A06-C5E2-7B24-0C82CE2F075C}" name="Images">
+            <FILE id="Zsb3bN" name="find_replace-24px.svg" compile="0" resource="1"
+                  file="submodules/JUCE-AppBasics/Resources/Images/find_replace-24px.svg"/>
+          </GROUP>
+        </GROUP>
+        <GROUP id="{2D73F130-0C5C-3687-3AD5-102D2E52CB78}" name="Source">
+          <FILE id="AwtJzX" name="CustomLookAndFeel.cpp" compile="1" resource="0"
+                file="submodules/JUCE-AppBasics/Source/CustomLookAndFeel.cpp"/>
+          <FILE id="Ntbc2E" name="CustomLookAndFeel.h" compile="0" resource="0"
+                file="submodules/JUCE-AppBasics/Source/CustomLookAndFeel.h"/>
+          <FILE id="iHwL2Z" name="Image_utils.cpp" compile="1" resource="0" file="submodules/JUCE-AppBasics/Source/Image_utils.cpp"/>
+          <FILE id="T63Gdx" name="Image_utils.h" compile="0" resource="0" file="submodules/JUCE-AppBasics/Source/Image_utils.h"/>
+          <FILE id="KaKzJT" name="iOS_utils.cpp" compile="1" resource="0" file="submodules/JUCE-AppBasics/Source/iOS_utils.cpp"/>
+          <FILE id="lMEjYA" name="iOS_utils.h" compile="0" resource="0" file="submodules/JUCE-AppBasics/Source/iOS_utils.h"/>
+          <FILE id="ukYS6O" name="ZeroconfDiscoverComponent.cpp" compile="1"
+                resource="0" file="submodules/JUCE-AppBasics/Source/ZeroconfDiscoverComponent.cpp"/>
+          <FILE id="ZQHsW7" name="ZeroconfDiscoverComponent.h" compile="0" resource="0"
+                file="submodules/JUCE-AppBasics/Source/ZeroconfDiscoverComponent.h"/>
+        </GROUP>
+      </GROUP>
+      <GROUP id="{3DC4FFDC-5D34-064E-0304-3452EC534EBB}" name="NanoOcp">
+        <GROUP id="{D61B8334-ED08-4A47-0297-7A7E83EFCF1D}" name="Source">
+          <FILE id="aREa29" name="NanoOcp1.cpp" compile="1" resource="0" file="submodules/NanoOcp/Source/NanoOcp1.cpp"/>
+          <FILE id="L129fP" name="NanoOcp1.h" compile="0" resource="0" file="submodules/NanoOcp/Source/NanoOcp1.h"/>
+          <FILE id="RxZDwC" name="Ocp1Connection.cpp" compile="1" resource="0"
+                file="submodules/NanoOcp/Source/Ocp1Connection.cpp"/>
+          <FILE id="fJCtf3" name="Ocp1Connection.h" compile="0" resource="0"
+                file="submodules/NanoOcp/Source/Ocp1Connection.h"/>
+          <FILE id="JWKYfk" name="Ocp1ConnectionServer.cpp" compile="1" resource="0"
+                file="submodules/NanoOcp/Source/Ocp1ConnectionServer.cpp"/>
+          <FILE id="akg0SU" name="Ocp1ConnectionServer.h" compile="0" resource="0"
+                file="submodules/NanoOcp/Source/Ocp1ConnectionServer.h"/>
+          <FILE id="lLZ1yR" name="Ocp1Message.cpp" compile="1" resource="0" file="submodules/NanoOcp/Source/Ocp1Message.cpp"/>
+          <FILE id="YWSWEn" name="Ocp1Message.h" compile="0" resource="0" file="submodules/NanoOcp/Source/Ocp1Message.h"/>
+          <FILE id="f8s27C" name="Ocp1ObjectDefinitions.h" compile="0" resource="0"
+                file="submodules/NanoOcp/Source/Ocp1ObjectDefinitions.h"/>
+        </GROUP>
+      </GROUP>
+    </GROUP>
     <GROUP id="{7ECD1AF7-9362-6E0B-D48A-B0CDD0D015F1}" name="Resources">
       <GROUP id="{144740AA-81D3-FDC9-D0C6-0AFE45ACA594}" name="Images">
         <FILE id="bKmtj9" name="NanoAmpControl.png" compile="0" resource="1"
@@ -20,6 +75,18 @@
       </GROUP>
     </GROUP>
     <GROUP id="{0480E33C-041F-2346-F9AA-44BBEAD80CFE}" name="Source">
+      <FILE id="BYVvEr" name="NanoAmpControl.cpp" compile="1" resource="0"
+            file="Source/NanoAmpControl.cpp"/>
+      <FILE id="ER6XMB" name="NanoAmpControl.h" compile="0" resource="0"
+            file="Source/NanoAmpControl.h"/>
+      <FILE id="j6ufBx" name="NanoAmpControlProcessor.cpp" compile="1" resource="0"
+            file="Source/NanoAmpControlProcessor.cpp"/>
+      <FILE id="o6Lwyk" name="NanoAmpControlProcessor.h" compile="0" resource="0"
+            file="Source/NanoAmpControlProcessor.h"/>
+      <FILE id="qnlzn6" name="NanoAmpControlUI.cpp" compile="1" resource="0"
+            file="Source/NanoAmpControlUI.cpp"/>
+      <FILE id="dx0IKE" name="NanoAmpControlUI.h" compile="0" resource="0"
+            file="Source/NanoAmpControlUI.h"/>
       <FILE id="nPsHa6" name="MainComponent.cpp" compile="1" resource="0"
             file="Source/MainComponent.cpp"/>
       <FILE id="FlvUrO" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>

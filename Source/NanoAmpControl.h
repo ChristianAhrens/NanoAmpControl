@@ -20,25 +20,39 @@
 
 #include <JuceHeader.h>
 
-/**
- * Fwd. decl.
- */
+
 namespace NanoAmpControl
 {
-    class NanoAmpControl;
-}
 
-class MainComponent   :  public juce::Component
+/**
+ * Fwd. decls
+ */
+class NanoAmpControlUI;
+class NanoAmpControlProcessor;
+
+//==============================================================================
+/**
+ *
+ */
+class NanoAmpControl
 {
 public:
-    MainComponent();
-    ~MainComponent() override;
+    NanoAmpControl();
+    ~NanoAmpControl();
     
     //==========================================================================
-    void resized() override;
+    juce::Component* getUIComponent();
+
+    //==========================================================================
 
 private:
-    std::unique_ptr<NanoAmpControl::NanoAmpControl>    m_ampControl;
+    //==========================================================================
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
+    //==========================================================================
+    std::unique_ptr<NanoAmpControlProcessor>    m_NanoAmpControlProcessor;
+    std::unique_ptr<NanoAmpControlUI>           m_NanoAmpControlUI;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NanoAmpControl)
+};
+
 };

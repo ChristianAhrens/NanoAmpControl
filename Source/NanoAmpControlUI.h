@@ -1,6 +1,6 @@
-/* Copyright (c) 2023, Christian Ahrens
+/* Copyright (c) 2022, Christian Ahrens
  *
- * This file is part of SurroundFieldMixer <https://github.com/ChristianAhrens/NanoAmpControl>
+ * This file is part of SurroundFieldMixer <https://github.com/ChristianAhrens/SurroundFieldMixer>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 3.0 as published
@@ -20,25 +20,32 @@
 
 #include <JuceHeader.h>
 
-/**
- * Fwd. decl.
- */
+
 namespace NanoAmpControl
 {
-    class NanoAmpControl;
-}
 
-class MainComponent   :  public juce::Component
+
+//==============================================================================
+/*
+*/
+class NanoAmpControlUI :    public juce::Component
 {
 public:
-    MainComponent();
-    ~MainComponent() override;
-    
     //==========================================================================
+    NanoAmpControlUI();
+    ~NanoAmpControlUI();
+
+    //==============================================================================
+    void paint(Graphics&) override;
     void resized() override;
 
-private:
-    std::unique_ptr<NanoAmpControl::NanoAmpControl>    m_ampControl;
+    //==========================================================================
+    void lookAndFeelChanged() override;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
+private:
+    //==========================================================================
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NanoAmpControlUI)
 };
+
+}

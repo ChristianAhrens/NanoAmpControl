@@ -20,25 +20,37 @@
 
 #include <JuceHeader.h>
 
-/**
- * Fwd. decl.
- */
+
 namespace NanoAmpControl
 {
-    class NanoAmpControl;
-}
 
-class MainComponent   :  public juce::Component
+
+//==============================================================================
+/**
+ *
+ */
+class NanoAmpControlProcessor : public juce::MessageListener
 {
 public:
-    MainComponent();
-    ~MainComponent() override;
-    
-    //==========================================================================
-    void resized() override;
+    //==============================================================================
+    NanoAmpControlProcessor();
+    ~NanoAmpControlProcessor();
+
+    //==============================================================================
+    void handleMessage (const Message& message) override;
+
+protected:
+    //==============================================================================
+
 
 private:
-    std::unique_ptr<NanoAmpControl::NanoAmpControl>    m_ampControl;
+    //==============================================================================
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
+
+    //==============================================================================
+    
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoAmpControlProcessor)
 };
+
+} // namespace SurroundFieldMixer
