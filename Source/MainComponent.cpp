@@ -28,11 +28,17 @@ MainComponent::MainComponent()
     m_ampControl = std::make_unique<NanoAmpControl::NanoAmpControl>();
     addAndMakeVisible(m_ampControl->getUIComponent());
 
-    setSize(450, 800);
+    setSize(300, 533);
 }
 
 MainComponent::~MainComponent()
 {
+}
+
+void MainComponent::paint(juce::Graphics& g)
+{
+    // (Our component is opaque, so we must completely fill the background with a solid colour)
+    g.fillAll(getLookAndFeel().findColour(ResizableWindow::backgroundColourId));
 }
 
 void MainComponent::resized()

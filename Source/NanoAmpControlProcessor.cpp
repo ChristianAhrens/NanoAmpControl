@@ -18,22 +18,48 @@
 
 #include "NanoAmpControlProcessor.h"
 
+#include <NanoOcp1.h>
+
+
 namespace NanoAmpControl
 {
 
 
 //==============================================================================
-NanoAmpControlProcessor::NanoAmpControlProcessor() :
-	juce::MessageListener()
+NanoAmpControlProcessor::NanoAmpControlProcessor()
 {
+	auto address = juce::String("127.0.0.1");
+	auto port = 50014;
+
+	m_nanoOcp1Client = std::make_unique<NanoOcp1::NanoOcp1Client>(address, port);
+	m_nanoOcp1Client->onDataReceived = [=](const juce::MemoryBlock& data) {
+		DBG("onDataReceived - dl " + juce::String(data.getSize()));
+		return true;
+	};
+	m_nanoOcp1Client->onConnectionEstablished = [=]() {
+		DBG("onConnectionEstablished");
+		return;
+	};
+	m_nanoOcp1Client->onConnectionLost = [=]() {
+		DBG("onConnectionLost");
+		return;
+	};
+	m_nanoOcp1Client->start();
 }
 
 NanoAmpControlProcessor::~NanoAmpControlProcessor()
 {
+	m_nanoOcp1Client->stop();
 }
 
-void NanoAmpControlProcessor::handleMessage (const Message& message)
+bool NanoAmpControlProcessor::UpdateConnectionParameters(const juce::String& address, const int port)
 {
+	auto success = true;
+	success = success && m_nanoOcp1Client->stop();
+	m_nanoOcp1Client->setAddress(address);
+	m_nanoOcp1Client->setPort(port);
+	success = success && m_nanoOcp1Client->start();
+	return success;
 }
 
 

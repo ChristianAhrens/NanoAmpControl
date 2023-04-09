@@ -21,6 +21,15 @@
 #include <JuceHeader.h>
 
 
+/**
+ * Fwd. Decls
+ */
+namespace NanoOcp1
+{
+class NanoOcp1;
+class NanoOcp1Client;
+}
+
 namespace NanoAmpControl
 {
 
@@ -29,7 +38,7 @@ namespace NanoAmpControl
 /**
  *
  */
-class NanoAmpControlProcessor : public juce::MessageListener
+class NanoAmpControlProcessor
 {
 public:
     //==============================================================================
@@ -37,7 +46,7 @@ public:
     ~NanoAmpControlProcessor();
 
     //==============================================================================
-    void handleMessage (const Message& message) override;
+    bool UpdateConnectionParameters(const juce::String& address, const int port);
 
 protected:
     //==============================================================================
@@ -46,9 +55,9 @@ protected:
 private:
     //==============================================================================
 
-
     //==============================================================================
-    
+    std::unique_ptr<NanoOcp1::NanoOcp1Client>  m_nanoOcp1Client;
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoAmpControlProcessor)
 };

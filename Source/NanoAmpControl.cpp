@@ -29,6 +29,12 @@ NanoAmpControl::NanoAmpControl()
 {
     m_NanoAmpControlProcessor = std::make_unique<NanoAmpControlProcessor>();
     m_NanoAmpControlUI = std::make_unique<NanoAmpControlUI>();
+    m_NanoAmpControlUI->onConnectionParametersEdited = [=](const juce::String& address, const int port) {
+        if (m_NanoAmpControlProcessor)
+            return m_NanoAmpControlProcessor->UpdateConnectionParameters(address, port);
+        else
+            return false;
+    };
 }
 
 NanoAmpControl::~NanoAmpControl()

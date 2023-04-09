@@ -35,6 +35,7 @@ public:
     ~MainComponent() override;
     
     //==========================================================================
+    void paint(juce::Graphics& g);
     void resized() override;
 
 private:

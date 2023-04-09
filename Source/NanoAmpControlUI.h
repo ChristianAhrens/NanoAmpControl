@@ -21,6 +21,14 @@
 #include <JuceHeader.h>
 
 
+/**
+ * Fwd. Decls
+ */
+namespace JUCEAppBasics
+{
+    class ZeroconfDiscoverComponent;
+}
+
 namespace NanoAmpControl
 {
 
@@ -28,7 +36,7 @@ namespace NanoAmpControl
 //==============================================================================
 /*
 */
-class NanoAmpControlUI :    public juce::Component
+class NanoAmpControlUI :    public juce::Component, juce::Button::Listener, juce::Slider::Listener, juce::TextEditor::Listener
 {
 public:
     //==========================================================================
@@ -42,8 +50,37 @@ public:
     //==========================================================================
     void lookAndFeelChanged() override;
 
+    //==============================================================================
+    void buttonClicked(Button* button) override;
+
+    //==============================================================================
+    void sliderValueChanged(Slider* slider) override;
+
+    //==============================================================================
+    void textEditorReturnKeyPressed(TextEditor& editor) override;
+
+    //==============================================================================
+    std::function<bool(const juce::String&, const int)> onConnectionParametersEdited;
+
 private:
     //==========================================================================
+
+    //==========================================================================
+    std::unique_ptr<TextEditor>                                 m_ipAndPortEditor;
+    std::unique_ptr<JUCEAppBasics::ZeroconfDiscoverComponent>   m_zeroconfDiscoverButton;
+
+    std::unique_ptr<TextButton>                                 m_AmpPowerOnButton;
+
+    std::unique_ptr<Slider>                                     m_AmpGainSliderCh1;
+    std::unique_ptr<Slider>                                     m_AmpGainSliderCh2;
+    std::unique_ptr<Slider>                                     m_AmpGainSliderCh3;
+    std::unique_ptr<Slider>                                     m_AmpGainSliderCh4;
+
+    std::unique_ptr<TextButton>                                 m_AmpMuteButtonCh1;
+    std::unique_ptr<TextButton>                                 m_AmpMuteButtonCh2;
+    std::unique_ptr<TextButton>                                 m_AmpMuteButtonCh3;
+    std::unique_ptr<TextButton>                                 m_AmpMuteButtonCh4;
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NanoAmpControlUI)
 };
