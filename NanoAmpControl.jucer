@@ -29,10 +29,6 @@
           </GROUP>
         </GROUP>
         <GROUP id="{2D73F130-0C5C-3687-3AD5-102D2E52CB78}" name="Source">
-          <FILE id="AwtJzX" name="CustomLookAndFeel.cpp" compile="1" resource="0"
-                file="submodules/JUCE-AppBasics/Source/CustomLookAndFeel.cpp"/>
-          <FILE id="Ntbc2E" name="CustomLookAndFeel.h" compile="0" resource="0"
-                file="submodules/JUCE-AppBasics/Source/CustomLookAndFeel.h"/>
           <FILE id="iHwL2Z" name="Image_utils.cpp" compile="1" resource="0" file="submodules/JUCE-AppBasics/Source/Image_utils.cpp"/>
           <FILE id="T63Gdx" name="Image_utils.h" compile="0" resource="0" file="submodules/JUCE-AppBasics/Source/Image_utils.h"/>
           <FILE id="KaKzJT" name="iOS_utils.cpp" compile="1" resource="0" file="submodules/JUCE-AppBasics/Source/iOS_utils.cpp"/>
@@ -75,6 +71,8 @@
       </GROUP>
     </GROUP>
     <GROUP id="{0480E33C-041F-2346-F9AA-44BBEAD80CFE}" name="Source">
+      <FILE id="upYf1Q" name="LookAndFeel.cpp" compile="1" resource="0" file="Source/LookAndFeel.cpp"/>
+      <FILE id="ExjnxS" name="LookAndFeel.h" compile="0" resource="0" file="Source/LookAndFeel.h"/>
       <FILE id="BYVvEr" name="NanoAmpControl.cpp" compile="1" resource="0"
             file="Source/NanoAmpControl.cpp"/>
       <FILE id="ER6XMB" name="NanoAmpControl.h" compile="0" resource="0"
