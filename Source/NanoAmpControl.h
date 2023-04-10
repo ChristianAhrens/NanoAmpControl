@@ -88,7 +88,7 @@ public:
     juce::Component* getUIComponent();
 
     //==========================================================================
-    static const std::uint16_t s_channelCount{ 4 };
+    static constexpr std::uint16_t s_channelCount{ 4 };
 
 private:
     //==========================================================================
