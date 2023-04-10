@@ -30,6 +30,8 @@ namespace NanoOcp1
 {
 class NanoOcp1;
 class NanoOcp1Client;
+class Ocp1Notification;
+class Ocp1Response;
 }
 
 namespace NanoAmpControl
@@ -66,14 +68,21 @@ protected:
     void AddPendingSubscriptionHandle(const std::uint32_t handle);
     bool PopPendingSubscriptionHandle(const std::uint32_t handle);
     bool HasPendingSubscriptions();
+    //==============================================================================
+    void AddPendingGetValueHandle(const std::uint32_t handle, const std::uint32_t ONo);
+    const std::uint32_t PopPendingGetValueHandle(const std::uint32_t handle);
+    bool HasPendingGetValues();
 
 private:
     //==============================================================================
+    bool UpdateObjectValues(const NanoOcp1::Ocp1Notification* notifObj);
+    bool UpdateObjectValues(const std::uint32_t ONo, const NanoOcp1::Ocp1Response* responseObj);
 
     //==============================================================================
     std::unique_ptr<NanoOcp1::NanoOcp1Client>   m_nanoOcp1Client;
     ConnectionState                             m_connectionState{ Unknown };
     std::vector<std::uint32_t>                  m_pendingSubscriptionHandles;
+    std::map<std::uint32_t, std::uint32_t>      m_pendingGetValueHandlesWithONo;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoAmpControlProcessor)
