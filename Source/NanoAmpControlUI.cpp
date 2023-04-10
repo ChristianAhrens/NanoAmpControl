@@ -18,6 +18,8 @@
 
 #include "NanoAmpControlUI.h"
 
+#include "LedComponent.h"
+
 #include <ZeroconfDiscoverComponent.h>
 
 
@@ -48,6 +50,10 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
 	m_zeroconfDiscoverButton->clearServices();
 	m_zeroconfDiscoverButton->addDiscoverService(JUCEAppBasics::ZeroconfDiscoverComponent::ZST_OCA);
 	addAndMakeVisible(m_zeroconfDiscoverButton.get());
+
+	m_stateLed = std::make_unique<LedComponent>();
+	m_stateLed->SetOutlineThickness(1.0f);
+	addAndMakeVisible(m_stateLed.get());
 
 	m_AmpPowerOnButton = std::make_unique<TextButton>();
 	m_AmpPowerOnButton->setClickingTogglesState(true);
@@ -129,8 +135,10 @@ void NanoAmpControlUI::resized()
 
 	auto textEditorBounds = bounds.removeFromTop(connectionParamsHeight);
 	auto zeroconfButtonBounds = textEditorBounds.removeFromRight(connectionParamsHeight);
+	auto stateLedBounds = textEditorBounds.removeFromLeft(connectionParamsHeight);
 	m_ipAndPortEditor->setBounds(textEditorBounds.reduced(5));
 	m_zeroconfDiscoverButton->setBounds(zeroconfButtonBounds.reduced(5));
+	m_stateLed->setBounds(stateLedBounds.reduced(7));
 
 	auto pwrOnBounds = bounds.removeFromTop(buttonHeight).reduced(5);
 	m_AmpPowerOnButton->setBounds(pwrOnBounds);
@@ -229,6 +237,32 @@ bool NanoAmpControlUI::SetChannelGain(const std::uint16_t channel, const float g
 	}
 	else
 		return false;
+}
+
+void NanoAmpControlUI::SetConnectionState(const NanoAmpControlInterface::ConnectionState state)
+{
+	if (m_stateLed)
+	{
+		switch (state)
+		{
+		case Disconnected:
+			m_stateLed->SetState(LedComponent::State::Grey);
+			break;
+		case Connected:
+			m_stateLed->SetState(LedComponent::State::Yellow);
+			break;
+		case Subscribed:
+			m_stateLed->SetState(LedComponent::State::Green);
+			break;
+		case Active:
+			m_stateLed->SetState(LedComponent::State::Yellow);
+			break;
+		case Unknown:
+		default:
+			m_stateLed->SetState(LedComponent::State::Off);
+			break;
+		}
+	}
 }
 
 

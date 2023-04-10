@@ -35,6 +35,11 @@ namespace NanoAmpControl
 {
 
 
+/**
+ * Fwd. Decls
+ */
+class LedComponent;
+
 //==============================================================================
 /*
 */
@@ -72,6 +77,7 @@ public:
     bool SetPwrOnOff(const bool on) override;
     bool SetChannelMute(const std::uint16_t channel, const bool mute) override;
     bool SetChannelGain(const std::uint16_t channel, const float gain) override;
+    void SetConnectionState(const NanoAmpControlInterface::ConnectionState state) override;
 
 private:
     //==========================================================================
@@ -79,6 +85,8 @@ private:
     //==========================================================================
     std::unique_ptr<TextEditor>                                 m_ipAndPortEditor;
     std::unique_ptr<JUCEAppBasics::ZeroconfDiscoverComponent>   m_zeroconfDiscoverButton;
+
+    std::unique_ptr<LedComponent>                               m_stateLed;
 
     std::unique_ptr<TextButton>                                 m_AmpPowerOnButton;
 

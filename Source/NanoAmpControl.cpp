@@ -45,6 +45,10 @@ NanoAmpControl::NanoAmpControl()
         if (m_NanoAmpControlUI)
             m_NanoAmpControlUI->SetChannelGain(channel, gain);
     };
+    m_NanoAmpControlProcessor->onConnectionStateChanged = [=](NanoAmpControlProcessor::ConnectionState state) {
+        if (m_NanoAmpControlUI)
+            m_NanoAmpControlUI->SetConnectionState(state);
+    };
     // ui to processor
     m_NanoAmpControlUI->onPwrOnOff = [=](bool on) {
         if (m_NanoAmpControlProcessor)
@@ -58,6 +62,7 @@ NanoAmpControl::NanoAmpControl()
         if (m_NanoAmpControlProcessor)
             m_NanoAmpControlProcessor->SetChannelGain(channel, gain);
     };
+    //m_NanoAmpControlUI->onConnectionStateChanged is intentionally not connected here!
     m_NanoAmpControlUI->onConnectionParametersEdited = [=](const juce::String& address, const std::uint16_t port) {
         if (m_NanoAmpControlProcessor)
             return m_NanoAmpControlProcessor->UpdateConnectionParameters(address, port);
@@ -68,6 +73,14 @@ NanoAmpControl::NanoAmpControl()
 
 NanoAmpControl::~NanoAmpControl()
 {
+    m_NanoAmpControlProcessor->onPwrOnOff = nullptr;
+    m_NanoAmpControlProcessor->onChannelMute = nullptr;
+    m_NanoAmpControlProcessor->onChannelGain = nullptr;
+    m_NanoAmpControlProcessor->onConnectionStateChanged = nullptr;
+    m_NanoAmpControlUI->onPwrOnOff = nullptr;
+    m_NanoAmpControlUI->onChannelMute = nullptr;
+    m_NanoAmpControlUI->onChannelGain = nullptr;
+    m_NanoAmpControlUI->onConnectionParametersEdited = nullptr;
 }
 
 juce::Component* NanoAmpControl::getUIComponent()
