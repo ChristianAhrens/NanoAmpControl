@@ -20,6 +20,8 @@
 
 #include <JuceHeader.h>
 
+#include "NanoAmpControl.h"
+
 
 /**
  * Fwd. Decls
@@ -38,19 +40,25 @@ namespace NanoAmpControl
 /**
  *
  */
-class NanoAmpControlProcessor
+class NanoAmpControlProcessor : public NanoAmpControlInterface
 {
 public:
     //==============================================================================
-    NanoAmpControlProcessor();
+    NanoAmpControlProcessor(const std::uint16_t ampChannelCount);
     ~NanoAmpControlProcessor();
 
     //==============================================================================
-    bool UpdateConnectionParameters(const juce::String& address, const int port);
+    bool UpdateConnectionParameters(const juce::String& address, const std::uint16_t port);
+
+    //==============================================================================
+    bool SetPwrOnOff(const bool on) override;
+    bool SetChannelMute(const std::uint16_t channel, const bool mute) override;
+    bool SetChannelGain(const std::uint16_t channel, const float gain) override;
 
 protected:
     //==============================================================================
-
+    bool ProcessReceivedOcp1Message(const juce::MemoryBlock& message);
+    bool CreateObjectSubscriptions();
 
 private:
     //==============================================================================
