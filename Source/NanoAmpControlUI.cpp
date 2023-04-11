@@ -143,33 +143,26 @@ void NanoAmpControlUI::paint (Graphics& g)
 
 	auto bounds = getLocalBounds();
 	auto connectionParamsBounds = bounds.removeFromTop(connectionParamsHeight);
+	auto gnrlCtrlBounds = bounds.removeFromTop(buttonHeight);
 	auto infoIconsBounds = connectionParamsBounds;
+	infoIconsBounds = infoIconsBounds.removeFromRight(infoIconsWidth);
+
+	// fill rects first to not have them overpaint follwing line drawing
 	g.setColour(getLookAndFeel().findColour(juce::TextEditor::backgroundColourId));
 	g.fillRect(connectionParamsBounds);
+	g.fillRect(bounds.removeFromRight(channelWidth));
+	g.fillRect(gnrlCtrlBounds);
+
+	// draw lines
 	g.setColour(getLookAndFeel().findColour(juce::TextEditor::outlineColourId));
 	g.drawLine(juce::Line<float>(connectionParamsBounds.getBottomLeft().toFloat(), infoIconsBounds.getBottomRight().toFloat()));
-	infoIconsBounds = infoIconsBounds.removeFromRight(infoIconsWidth);
-	g.setColour(getLookAndFeel().findColour(juce::TextEditor::outlineColourId));
 	g.drawLine(juce::Line<float>(infoIconsBounds.getTopLeft().toFloat(), infoIconsBounds.getBottomLeft().toFloat()));
-
-	auto gnrlCtrlBounds = bounds.removeFromTop(buttonHeight);
-	gnrlCtrlBounds.removeFromTop(1); // to not have the line above being partly painted over by our following rect fill
-	g.setColour(getLookAndFeel().findColour(juce::TextEditor::backgroundColourId));
-	g.fillRect(gnrlCtrlBounds);
-	g.setColour(getLookAndFeel().findColour(juce::TextEditor::outlineColourId));
 	g.drawLine(juce::Line<float>(gnrlCtrlBounds.getBottomLeft().toFloat(), gnrlCtrlBounds.getBottomRight().toFloat()));
-
-	g.setColour(getLookAndFeel().findColour(juce::TextEditor::outlineColourId));
 	for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
 	{
 		auto channelCtrlBounds = bounds.removeFromLeft(channelWidth);
 		g.drawLine(juce::Line<float>(channelCtrlBounds.getTopRight().toFloat(), channelCtrlBounds.getBottomRight().toFloat()));
 	}
-
-	bounds.removeFromTop(1); // to not have the line above being partly painted over by our following rect fill
-	bounds.removeFromLeft(1); // to not have the line above being partly painted over by our following rect fill
-	g.setColour(getLookAndFeel().findColour(juce::TextEditor::ColourIds::backgroundColourId));
-	g.fillRect(bounds);
 }
 
 void NanoAmpControlUI::resized()
