@@ -61,7 +61,6 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
 	m_AmpPowerOnButton = std::make_unique<TextButton>();
 	m_AmpPowerOnButton->setClickingTogglesState(true);
 	m_AmpPowerOnButton->setButtonText("PwrON");
-	m_AmpPowerOnButton->setColour(juce::TextButton::ColourIds::buttonOnColourId, juce::Colours::forestgreen);
 	m_AmpPowerOnButton->addListener(this);
 	addAndMakeVisible(m_AmpPowerOnButton.get());
 
