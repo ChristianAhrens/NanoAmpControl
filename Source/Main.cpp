@@ -17,9 +17,9 @@
  */
 
 #include <JuceHeader.h>
-#include "MainComponent.h"
 
-#include "../submodules/JUCE-AppBasics/Source/CustomLookAndFeel.h"
+#include "MainComponent.h"
+#include "LookAndFeel.h"
 
 //==============================================================================
 class MainApplication  : public juce::JUCEApplication
@@ -73,7 +73,7 @@ public:
                                                                           .findColour (ResizableWindow::backgroundColourId),
                                                     DocumentWindow::allButtons)
         {
-            m_customLookAndFeel = std::unique_ptr<LookAndFeel>(new JUCEAppBasics::CustomLookAndFeel);
+            m_customLookAndFeel = std::unique_ptr<LookAndFeel>(new NanoAmpControl::DarkLookAndFeel);
             Desktop::getInstance().setDefaultLookAndFeel(m_customLookAndFeel.get());
 
             setUsingNativeTitleBar (true);

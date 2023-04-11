@@ -30,6 +30,50 @@ namespace NanoAmpControl
 class NanoAmpControlUI;
 class NanoAmpControlProcessor;
 
+
+//==============================================================================
+/**
+ *
+ */
+class NanoAmpControlInterface
+{
+public:
+    enum ConnectionState
+    {
+        Unknown,
+        Disconnected,
+        Connected,
+        Active,
+        Subscribed,
+    };
+
+public:
+    NanoAmpControlInterface(const std::uint16_t ampChannelCount) : m_ampChannelCount(ampChannelCount) {};
+
+    //==============================================================================
+    virtual bool SetPwrOnOff(const bool on) = 0;
+    virtual bool SetChannelMute(const std::uint16_t channel, const bool mute) = 0;
+    virtual bool SetChannelGain(const std::uint16_t channel, const float gain) = 0;
+
+    //==============================================================================
+    virtual void SetConnectionState(const ConnectionState state) = 0;
+
+    //==============================================================================
+    std::function<void(const bool on)>                                  onPwrOnOff;
+    std::function<void(const std::uint16_t channel, const bool mute)>   onChannelMute;
+    std::function<void(const std::uint16_t channel, const float gain)>  onChannelGain;
+    std::function<void(const ConnectionState state)>                    onConnectionStateChanged;
+
+protected:
+    //==============================================================================
+    std::uint16_t GetAmpChannelCount() { return m_ampChannelCount; };
+
+private:
+    //==============================================================================
+    std::uint16_t   m_ampChannelCount{ 0 };
+
+};
+
 //==============================================================================
 /**
  *
@@ -44,6 +88,7 @@ public:
     juce::Component* getUIComponent();
 
     //==========================================================================
+    static constexpr std::uint16_t s_channelCount{ 4 };
 
 private:
     //==========================================================================

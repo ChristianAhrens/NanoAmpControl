@@ -19,6 +19,7 @@
 #include "NanoAmpControlProcessor.h"
 
 #include <NanoOcp1.h>
+#include <Ocp1ObjectDefinitions.h>
 
 
 namespace NanoAmpControl
@@ -26,22 +27,24 @@ namespace NanoAmpControl
 
 
 //==============================================================================
-NanoAmpControlProcessor::NanoAmpControlProcessor()
+NanoAmpControlProcessor::NanoAmpControlProcessor(const std::uint16_t ampChannelCount)
+    : NanoAmpControlInterface(ampChannelCount)
 {
 	auto address = juce::String("127.0.0.1");
 	auto port = 50014;
 
 	m_nanoOcp1Client = std::make_unique<NanoOcp1::NanoOcp1Client>(address, port);
 	m_nanoOcp1Client->onDataReceived = [=](const juce::MemoryBlock& data) {
-		DBG("onDataReceived - dl " + juce::String(data.getSize()));
-		return true;
+        return ProcessReceivedOcp1Message(data);
 	};
 	m_nanoOcp1Client->onConnectionEstablished = [=]() {
-		DBG("onConnectionEstablished");
+        SetConnectionState(Connected);
+        CreateObjectSubscriptions();
+        QueryObjectValues();
 		return;
 	};
 	m_nanoOcp1Client->onConnectionLost = [=]() {
-		DBG("onConnectionLost");
+        SetConnectionState(Disconnected);
 		return;
 	};
 	m_nanoOcp1Client->start();
@@ -49,10 +52,11 @@ NanoAmpControlProcessor::NanoAmpControlProcessor()
 
 NanoAmpControlProcessor::~NanoAmpControlProcessor()
 {
-	m_nanoOcp1Client->stop();
+	if (m_nanoOcp1Client)
+		m_nanoOcp1Client->stop();
 }
 
-bool NanoAmpControlProcessor::UpdateConnectionParameters(const juce::String& address, const int port)
+bool NanoAmpControlProcessor::UpdateConnectionParameters(const juce::String& address, const std::uint16_t port)
 {
 	auto success = true;
 	success = success && m_nanoOcp1Client->stop();
@@ -60,6 +64,326 @@ bool NanoAmpControlProcessor::UpdateConnectionParameters(const juce::String& add
 	m_nanoOcp1Client->setPort(port);
 	success = success && m_nanoOcp1Client->start();
 	return success;
+}
+
+void NanoAmpControlProcessor::SetConnectionState(const ConnectionState state)
+{
+    if (m_connectionState != state)
+    {
+        m_connectionState = state;
+
+        if (onConnectionStateChanged)
+            onConnectionStateChanged(state);
+    }
+}
+
+bool NanoAmpControlProcessor::ProcessReceivedOcp1Message(const juce::MemoryBlock& message)
+{
+    std::unique_ptr<NanoOcp1::Ocp1Message> msgObj = NanoOcp1::Ocp1Message::UnmarshalOcp1Message(message);
+    if (msgObj)
+    {
+        if (m_connectionState < Active)
+            SetConnectionState(Active);
+
+        switch (msgObj->GetMessageType())
+        {
+        case NanoOcp1::Ocp1Message::Notification:
+        {
+            NanoOcp1::Ocp1Notification* notifObj = static_cast<NanoOcp1::Ocp1Notification*>(msgObj.get());
+
+            if (!UpdateObjectValues(notifObj))
+                DBG("Got an unhandled OCA notification message");
+
+            return true;
+        }
+        case NanoOcp1::Ocp1Message::Response:
+        {
+            NanoOcp1::Ocp1Response* responseObj = static_cast<NanoOcp1::Ocp1Response*>(msgObj.get());
+
+            auto handle = responseObj->GetResponseHandle();
+            if (responseObj->GetResponseStatus() != 0)
+            {
+                DBG("Got an OCA response for handle " << juce::String(handle) <<
+                    " with status " << NanoOcp1::StatusToString(responseObj->GetResponseStatus()));
+            }
+            else if (PopPendingSubscriptionHandle(handle) && !HasPendingSubscriptions())
+            {
+                // All subscriptions were confirmed
+                if (onConnectionStateChanged)
+                    onConnectionStateChanged(Subscribed);
+            }
+            else
+            {
+                auto ONo = PopPendingGetValueHandle(handle);
+                if (0x00 != ONo)
+                {
+                    if (!UpdateObjectValues(ONo, responseObj))
+                        DBG("Got an unhandled OCA getvalue response message");
+                }
+            }
+
+            return true;
+        }
+        case NanoOcp1::Ocp1Message::KeepAlive:
+        {
+            // Reset online timer
+            DBG("Got an OCA keepalive message");
+
+            return true;
+        }
+        default:
+            break;
+        }
+    }
+
+    return false;
+}
+
+bool NanoAmpControlProcessor::UpdateObjectValues(const NanoOcp1::Ocp1Notification* notifObj)
+{
+    // Update the right GUI element according to the definition of the object 
+    // which triggered the notification.
+
+    // Objects without any further addressing
+    if (notifObj->MatchesObject(NanoOcp1::GetONo(1, 0, 0, NanoOcp1::BoxAndObjNo::Settings_PwrOn)))
+    {
+        std::uint16_t switchSetting = NanoOcp1::DataToUint16(notifObj->GetParameterData());
+
+        if (onPwrOnOff)
+            onPwrOnOff(switchSetting > 0);
+
+        return true;
+    }
+
+    // Objects with additional channel addressing dimension
+    for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
+    {
+        if (notifObj->MatchesObject(NanoOcp1::GetONo(1, 0, ch, NanoOcp1::BoxAndObjNo::Config_PotiLevel)))
+        {
+            std::float_t newGain = NanoOcp1::DataToFloat(notifObj->GetParameterData());
+
+            if (onChannelGain)
+                onChannelGain(ch, newGain);
+
+            return true;
+        }
+        else if (notifObj->MatchesObject(NanoOcp1::GetONo(1, 0, ch, NanoOcp1::BoxAndObjNo::Config_Mute)))
+        {
+            std::uint16_t switchSetting = NanoOcp1::DataToUint16(notifObj->GetParameterData());
+
+            if (onChannelMute)
+                onChannelMute(ch, switchSetting == 1);
+
+            return true;
+        }
+
+        //// Objects with additional record addressing dimension
+        //for (std::uint16_t rec = 1; rec <= GetAmpRecordCount(); ch++)
+        //{
+        //}
+    }
+
+    return false;
+}
+
+bool NanoAmpControlProcessor::UpdateObjectValues(const std::uint32_t ONo, const NanoOcp1::Ocp1Response* responseObj)
+{
+    // Update the right GUI element according to the definition of the object 
+    // to which the response refers.
+    
+    // Objects without any further addressing
+    if (ONo == NanoOcp1::GetONo(1, 0, 0, NanoOcp1::BoxAndObjNo::Settings_PwrOn))
+    {
+        std::uint16_t switchSetting = NanoOcp1::DataToUint16(responseObj->GetParameterData());
+    
+        if (onPwrOnOff)
+            onPwrOnOff(switchSetting > 0);
+    
+        return true;
+    }
+    
+    // Objects with additional channel addressing dimension
+    for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
+    {
+        if (ONo == NanoOcp1::GetONo(1, 0, ch, NanoOcp1::BoxAndObjNo::Config_PotiLevel))
+        {
+            std::float_t newGain = NanoOcp1::DataToFloat(responseObj->GetParameterData());
+    
+            if (onChannelGain)
+                onChannelGain(ch, newGain);
+    
+            return true;
+        }
+        else if (ONo == NanoOcp1::GetONo(1, 0, ch, NanoOcp1::BoxAndObjNo::Config_Mute))
+        {
+            std::uint16_t switchSetting = NanoOcp1::DataToUint16(responseObj->GetParameterData());
+    
+            if (onChannelMute)
+                onChannelMute(ch, switchSetting == 1);
+    
+            return true;
+        }
+    
+        //// Objects with additional record addressing dimension
+        //for (std::uint16_t rec = 1; rec <= GetAmpRecordCount(); ch++)
+        //{
+        //}
+    }
+
+    return false;
+}
+
+bool NanoAmpControlProcessor::CreateObjectSubscriptions()
+{
+    if (!m_nanoOcp1Client || !m_nanoOcp1Client->isConnected())
+        return false;
+
+    bool success = true;
+
+    std::uint32_t handle = 0;
+
+    NanoOcp1::Ocp1CommandParameters cmdDef(NanoOcp1::dbOcaObjectDef_Dy_AddSubscription_Settings_PwrOn);
+    // subscribe pwrOn
+    success = success && m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(cmdDef, handle).GetMemoryBlock());
+    AddPendingSubscriptionHandle(handle);
+
+    cmdDef = NanoOcp1::dbOcaObjectDef_Dy_AddSubscription_Config_PotiLevel;
+    // subscribe potilevel for all channels
+    for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
+    {
+        cmdDef.parameterData = NanoOcp1::DataFromOnoForSubscription(NanoOcp1::GetONo(1, 0, ch, NanoOcp1::BoxAndObjNo::Config_PotiLevel));
+        success = success && m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(cmdDef, handle).GetMemoryBlock());
+        AddPendingSubscriptionHandle(handle);
+    }
+
+    cmdDef = NanoOcp1::dbOcaObjectDef_Dy_AddSubscription_Config_Mute;
+    // subscribe mute for all channels
+    for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
+    {
+        cmdDef.parameterData = NanoOcp1::DataFromOnoForSubscription(NanoOcp1::GetONo(1, 0, ch, NanoOcp1::BoxAndObjNo::Config_Mute));
+        success = success && m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(cmdDef, handle).GetMemoryBlock());
+        AddPendingSubscriptionHandle(handle);
+    }
+
+    return success;
+}
+
+bool NanoAmpControlProcessor::QueryObjectValues()
+{
+    if (!m_nanoOcp1Client || !m_nanoOcp1Client->isConnected())
+        return false;
+
+    bool success = true;
+
+    std::uint32_t handle = 0;
+
+    NanoOcp1::Ocp1CommandParameters cmdDef(NanoOcp1::dbOcaObjectDef_Dy_Get_Settings_PwrOn);
+    // subscribe pwrOn
+    success = success && m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(cmdDef, handle).GetMemoryBlock());
+    AddPendingGetValueHandle(handle, cmdDef.targetOno);
+
+    cmdDef = NanoOcp1::dbOcaObjectDef_Dy_Get_Config_PotiLevel;
+    // subscribe potilevel for all channels
+    for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
+    {
+        cmdDef.targetOno = NanoOcp1::GetONo(1, 0, ch, NanoOcp1::BoxAndObjNo::Config_PotiLevel);
+        success = success && m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(cmdDef, handle).GetMemoryBlock());
+        AddPendingGetValueHandle(handle, cmdDef.targetOno);
+    }
+
+    cmdDef = NanoOcp1::dbOcaObjectDef_Dy_Get_Config_Mute;
+    // subscribe mute for all channels
+    for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
+    {
+        cmdDef.targetOno = NanoOcp1::GetONo(1, 0, ch, NanoOcp1::BoxAndObjNo::Config_Mute);
+        success = success && m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(cmdDef, handle).GetMemoryBlock());
+        AddPendingGetValueHandle(handle, cmdDef.targetOno);
+    }
+
+    return success;
+}
+
+void NanoAmpControlProcessor::AddPendingSubscriptionHandle(const std::uint32_t handle)
+{
+    m_pendingSubscriptionHandles.push_back(handle);
+}
+
+bool NanoAmpControlProcessor::PopPendingSubscriptionHandle(const std::uint32_t handle)
+{
+    auto it = std::find(m_pendingSubscriptionHandles.begin(), m_pendingSubscriptionHandles.end(), handle);
+    if (it != m_pendingSubscriptionHandles.end())
+    {
+        m_pendingSubscriptionHandles.erase(it);
+        return true;
+    }
+    else
+        return false;
+}
+
+bool NanoAmpControlProcessor::HasPendingSubscriptions()
+{
+    return m_pendingSubscriptionHandles.empty();
+}
+
+void NanoAmpControlProcessor::AddPendingGetValueHandle(const std::uint32_t handle, const std::uint32_t ONo)
+{
+    m_pendingGetValueHandlesWithONo.insert(std::make_pair(handle, ONo));
+}
+
+const std::uint32_t NanoAmpControlProcessor::PopPendingGetValueHandle(const std::uint32_t handle)
+{
+    auto it = std::find_if(m_pendingGetValueHandlesWithONo.begin(), m_pendingGetValueHandlesWithONo.end(), [handle](const auto& val) { return val.first == handle; });
+    if (it != m_pendingGetValueHandlesWithONo.end())
+    {
+        auto ONo = it->second;
+        m_pendingGetValueHandlesWithONo.erase(it);
+        return ONo;
+    }
+    else
+        return 0x00;
+}
+
+bool NanoAmpControlProcessor::HasPendingGetValues()
+{
+    return m_pendingGetValueHandlesWithONo.empty();
+}
+
+bool NanoAmpControlProcessor::SetPwrOnOff(const bool on)
+{
+    std::uint32_t handle;
+    NanoOcp1::Ocp1CommandParameters cmdDef(NanoOcp1::dbOcaObjectDef_Dy_Set_Settings_PwrOn);
+    cmdDef.parameterData = NanoOcp1::DataFromUint16(static_cast<std::uint16_t>(on ? 1 : 0));
+
+    if (m_nanoOcp1Client && m_nanoOcp1Client->isConnected())
+        return m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(cmdDef, handle).GetMemoryBlock());
+    
+    return false;
+}
+
+bool NanoAmpControlProcessor::SetChannelMute(const std::uint16_t channel, const bool mute)
+{
+    std::uint32_t handle;
+    NanoOcp1::Ocp1CommandParameters cmdDef(NanoOcp1::dbOcaObjectDef_Dy_Set_Config_Mute);
+    cmdDef.targetOno = NanoOcp1::GetONo(1, 0, channel, NanoOcp1::BoxAndObjNo::Config_Mute),
+    cmdDef.parameterData = NanoOcp1::DataFromUint8(static_cast<std::uint8_t>(mute ? 1 : 2));
+    
+    if (m_nanoOcp1Client && m_nanoOcp1Client->isConnected())
+        return m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(cmdDef, handle).GetMemoryBlock());
+
+    return false;
+}
+
+bool NanoAmpControlProcessor::SetChannelGain(const std::uint16_t channel, const float gain)
+{
+	std::uint32_t handle;
+	NanoOcp1::Ocp1CommandParameters cmdDef(NanoOcp1::dbOcaObjectDef_Dy_Set_Config_PotiLevel);
+    cmdDef.targetOno = NanoOcp1::GetONo(1, 0, channel, NanoOcp1::BoxAndObjNo::Config_PotiLevel),
+	cmdDef.parameterData = NanoOcp1::DataFromFloat(static_cast<std::float_t>(gain));
+
+	if (m_nanoOcp1Client && m_nanoOcp1Client->isConnected())
+		return m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(cmdDef, handle).GetMemoryBlock());
+
+    return false;
 }
 
 

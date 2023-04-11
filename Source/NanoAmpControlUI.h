@@ -20,6 +20,8 @@
 
 #include <JuceHeader.h>
 
+#include "NanoAmpControl.h"
+
 
 /**
  * Fwd. Decls
@@ -33,14 +35,23 @@ namespace NanoAmpControl
 {
 
 
+/**
+ * Fwd. Decls
+ */
+class LedComponent;
+
 //==============================================================================
 /*
 */
-class NanoAmpControlUI :    public juce::Component, juce::Button::Listener, juce::Slider::Listener, juce::TextEditor::Listener
+class NanoAmpControlUI :    public NanoAmpControlInterface, 
+                            public juce::Component, 
+                            public juce::Button::Listener, 
+                            public juce::Slider::Listener, 
+                            public juce::TextEditor::Listener
 {
 public:
     //==========================================================================
-    NanoAmpControlUI();
+    NanoAmpControlUI(const std::uint16_t ampChannelCount);
     ~NanoAmpControlUI();
 
     //==============================================================================
@@ -60,26 +71,36 @@ public:
     void textEditorReturnKeyPressed(TextEditor& editor) override;
 
     //==============================================================================
-    std::function<bool(const juce::String&, const int)> onConnectionParametersEdited;
+    std::function<bool(const juce::String&, const std::uint16_t)> onConnectionParametersEdited;
+
+    //==============================================================================
+    bool SetPwrOnOff(const bool on) override;
+    bool SetChannelMute(const std::uint16_t channel, const bool mute) override;
+    bool SetChannelGain(const std::uint16_t channel, const float gain) override;
+    void SetConnectionState(const NanoAmpControlInterface::ConnectionState state) override;
 
 private:
     //==========================================================================
 
     //==========================================================================
+    std::unique_ptr<DrawableButton>								m_helpButton;
+
     std::unique_ptr<TextEditor>                                 m_ipAndPortEditor;
     std::unique_ptr<JUCEAppBasics::ZeroconfDiscoverComponent>   m_zeroconfDiscoverButton;
 
+    std::unique_ptr<LedComponent>                               m_stateLed;
+
     std::unique_ptr<TextButton>                                 m_AmpPowerOnButton;
 
-    std::unique_ptr<Slider>                                     m_AmpGainSliderCh1;
-    std::unique_ptr<Slider>                                     m_AmpGainSliderCh2;
-    std::unique_ptr<Slider>                                     m_AmpGainSliderCh3;
-    std::unique_ptr<Slider>                                     m_AmpGainSliderCh4;
+    std::map<std::uint16_t, std::unique_ptr<Slider>>            m_AmpChannelGainSliders;
+    std::map<std::uint16_t, std::unique_ptr<TextButton>>        m_AmpChannelMuteButtons;
+    std::map<std::uint16_t, std::unique_ptr<Label>>             m_AmpChannelLabels;
 
-    std::unique_ptr<TextButton>                                 m_AmpMuteButtonCh1;
-    std::unique_ptr<TextButton>                                 m_AmpMuteButtonCh2;
-    std::unique_ptr<TextButton>                                 m_AmpMuteButtonCh3;
-    std::unique_ptr<TextButton>                                 m_AmpMuteButtonCh4;
+    std::unique_ptr<Slider>                                     m_RelativeGainSlider;
+    std::unique_ptr<TextButton>                                 m_RelativeMuteButton;
+    std::unique_ptr<Label>                                      m_RelativeLabel;
+
+    double  m_lastKnownRelativeGainSliderValue{ 0.0 };
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NanoAmpControlUI)

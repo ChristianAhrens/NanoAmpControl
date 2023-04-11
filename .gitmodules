@@ -7,3 +7,6 @@
 [submodule "submodules/JUCE"]
 	path = submodules/JUCE
 	url = https://github.com/juce-framework/JUCE
+[submodule "submodules/create-dmg"]
+	path = submodules/create-dmg
+	url = https://github.com/create-dmg/create-dmg
