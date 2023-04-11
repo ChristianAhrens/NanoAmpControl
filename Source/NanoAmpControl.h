@@ -54,6 +54,8 @@ public:
     virtual bool SetPwrOnOff(const bool on) = 0;
     virtual bool SetChannelMute(const std::uint16_t channel, const bool mute) = 0;
     virtual bool SetChannelGain(const std::uint16_t channel, const float gain) = 0;
+
+    //==============================================================================
     virtual void SetConnectionState(const ConnectionState state) = 0;
 
     //==============================================================================

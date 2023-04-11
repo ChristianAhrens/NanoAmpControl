@@ -56,6 +56,8 @@ public:
     bool SetPwrOnOff(const bool on) override;
     bool SetChannelMute(const std::uint16_t channel, const bool mute) override;
     bool SetChannelGain(const std::uint16_t channel, const float gain) override;
+
+    //==============================================================================
     void SetConnectionState(const NanoAmpControlInterface::ConnectionState state) override;
 
 protected:
@@ -68,6 +70,7 @@ protected:
     void AddPendingSubscriptionHandle(const std::uint32_t handle);
     bool PopPendingSubscriptionHandle(const std::uint32_t handle);
     bool HasPendingSubscriptions();
+
     //==============================================================================
     void AddPendingGetValueHandle(const std::uint32_t handle, const std::uint32_t ONo);
     const std::uint32_t PopPendingGetValueHandle(const std::uint32_t handle);

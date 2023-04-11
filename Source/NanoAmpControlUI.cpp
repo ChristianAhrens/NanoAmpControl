@@ -43,7 +43,10 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
 	m_zeroconfDiscoverButton->onServiceSelected = [=](JUCEAppBasics::ZeroconfDiscoverComponent::ZeroconfServiceType type, ZeroconfSearcher::ZeroconfSearcher::ServiceInfo* info) {
 		ignoreUnused(type);
 		if (m_ipAndPortEditor)
-			m_ipAndPortEditor->setText(juce::String(info->ip) + ";" + juce::String(info->port));
+		{
+			m_ipAndPortEditor->setTooltip(juce::String(info->ip) + ";" + juce::String(info->port));
+			m_ipAndPortEditor->setText(juce::String(info->name).upToFirstOccurrenceOf("._oca",false, true));
+		}
 		if (onConnectionParametersEdited)
 			onConnectionParametersEdited(juce::String(info->ip), static_cast<std::uint16_t>(info->port));
 	};
@@ -201,11 +204,13 @@ void NanoAmpControlUI::textEditorReturnKeyPressed(TextEditor& editor)
 {
 	if (&editor == m_ipAndPortEditor.get())
 	{
-		auto ip = editor.getText().upToFirstOccurrenceOf(";", false, true);
+		auto ip = juce::IPAddress(editor.getText().upToFirstOccurrenceOf(";", false, true));
 		auto port = editor.getText().fromLastOccurrenceOf(";", false, true).getIntValue();
 
-		if (onConnectionParametersEdited)
-			onConnectionParametersEdited(ip, static_cast<std::uint16_t>(port));
+		juce::Range<int> tcpPortRange{ 1, 0xffff };
+		if (!ip.isNull() && tcpPortRange.contains(port))
+			if (onConnectionParametersEdited)
+				onConnectionParametersEdited(ip.toString(), static_cast<std::uint16_t>(port));
 	}
 }
 
