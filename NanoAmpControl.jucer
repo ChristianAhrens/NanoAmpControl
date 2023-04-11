@@ -26,6 +26,7 @@
           <GROUP id="{BE5AB823-4A06-C5E2-7B24-0C82CE2F075C}" name="Images">
             <FILE id="Zsb3bN" name="find_replace-24px.svg" compile="0" resource="1"
                   file="submodules/JUCE-AppBasics/Resources/Images/find_replace-24px.svg"/>
+            <FILE id="VJtNam" name="help-24px.svg" compile="0" resource="1" file="submodules/JUCE-AppBasics/Resources/Images/help-24px.svg"/>
           </GROUP>
         </GROUP>
         <GROUP id="{2D73F130-0C5C-3687-3AD5-102D2E52CB78}" name="Source">

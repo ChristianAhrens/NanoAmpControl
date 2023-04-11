@@ -83,6 +83,8 @@ private:
     //==========================================================================
 
     //==========================================================================
+    std::unique_ptr<DrawableButton>								m_helpButton;
+
     std::unique_ptr<TextEditor>                                 m_ipAndPortEditor;
     std::unique_ptr<JUCEAppBasics::ZeroconfDiscoverComponent>   m_zeroconfDiscoverButton;
 
