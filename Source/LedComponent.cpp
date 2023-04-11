@@ -46,6 +46,13 @@ void LedComponent::SetOutlineThickness(float thickness)
     repaint();
 }
 
+void LedComponent::SetTextLabel(const juce::String& textLabel)
+{
+    m_textLabel = textLabel;
+
+    repaint();
+}
+
 const juce::Colour LedComponent::GetColourForState(const State stateValue)
 {
     switch (stateValue)
@@ -68,15 +75,25 @@ const juce::Colour LedComponent::GetColourForState(const State stateValue)
 
 void LedComponent::paint(juce::Graphics& g)
 {
-    auto ledBounds = getLocalBounds().reduced(static_cast<int>(m_outlineThickness));
+    auto ledBounds = getLocalBounds().reduced(static_cast<int>(m_outlineThickness)).toFloat();
 
     // led fill - state dependant
     g.setColour(GetColourForState(m_currentStateValue));
-    g.fillEllipse(ledBounds.toFloat());
+    g.fillEllipse(ledBounds);
+
+    // textlabel if present
+    if (m_textLabel.isNotEmpty())
+    {
+        g.setColour(getLookAndFeel().findColour(juce::TextEditor::outlineColourId));
+        auto font = g.getCurrentFont();
+        font.setHeight(ledBounds.getHeight() / 2);
+        g.setFont(font);
+        g.drawText(m_textLabel, ledBounds, juce::Justification::centred);
+    }
 
     // led outline
-    g.setColour(getLookAndFeel().findColour(juce::TextEditor::ColourIds::outlineColourId));
-    g.drawEllipse(ledBounds.toFloat(), m_outlineThickness);
+    g.setColour(getLookAndFeel().findColour(juce::TextEditor::outlineColourId));
+    g.drawEllipse(ledBounds, m_outlineThickness);
 }
 
 

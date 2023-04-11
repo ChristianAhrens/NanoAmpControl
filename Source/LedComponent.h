@@ -48,14 +48,16 @@ public:
     //==========================================================================
     void SetState(const State stateValue);
     void SetOutlineThickness(float thickness);
+    void SetTextLabel(const juce::String& textLabel);
 
 private:
     //==========================================================================
     const juce::Colour GetColourForState(const State stateValue);
 
     //==========================================================================
-    State m_currentStateValue{ State::Off };
-    float m_outlineThickness{ 2.0f };
+    State           m_currentStateValue{ State::Off };
+    float           m_outlineThickness{ 2.0f };
+    juce::String    m_textLabel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LedComponent)
 };
