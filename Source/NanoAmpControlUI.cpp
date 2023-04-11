@@ -93,6 +93,28 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
 		m_AmpChannelLabels.at(ch)->setJustificationType(juce::Justification::centred);
 		addAndMakeVisible(m_AmpChannelLabels.at(ch).get());
 	}
+
+	m_RelativeGainSlider = std::make_unique<Slider>();
+	m_RelativeGainSlider->setRange(-57.5, 6.0, 0.1);
+	m_RelativeGainSlider->setTextValueSuffix("db");
+	m_RelativeGainSlider->setNumDecimalPlacesToDisplay(1);
+	m_RelativeGainSlider->setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+	m_RelativeGainSlider->setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxAbove, false, 60, 15);
+	m_RelativeGainSlider->setColour(juce::Slider::ColourIds::backgroundColourId, getLookAndFeel().findColour(ResizableWindow::backgroundColourId));
+	m_RelativeGainSlider->setColour(juce::Slider::ColourIds::trackColourId, getLookAndFeel().findColour(ResizableWindow::backgroundColourId));
+	m_RelativeGainSlider->addListener(this);
+	addAndMakeVisible(m_RelativeGainSlider.get());
+
+	m_RelativeMuteButton = std::make_unique<TextButton>();
+	m_RelativeMuteButton->setClickingTogglesState(true);
+	m_RelativeMuteButton->setButtonText("Mute");
+	m_RelativeMuteButton->setColour(juce::TextButton::ColourIds::buttonOnColourId, juce::Colours::indianred);
+	m_RelativeMuteButton->addListener(this);
+	addAndMakeVisible(m_RelativeMuteButton.get());
+
+	m_RelativeLabel = std::make_unique<Label>("AmpChannelLabel", "Rel.");
+	m_RelativeLabel->setJustificationType(juce::Justification::centred);
+	addAndMakeVisible(m_RelativeLabel.get());
 }
 
 NanoAmpControlUI::~NanoAmpControlUI()
@@ -105,7 +127,7 @@ void NanoAmpControlUI::paint (Graphics& g)
 
 	auto connectionParamsHeight = 35;
 	auto buttonHeight = 35;
-	auto channelWidth = getWidth() / GetAmpChannelCount();
+	auto channelWidth = getWidth() / (GetAmpChannelCount() + 1);
 
 	auto bounds = getLocalBounds();
 	auto headerBounds = bounds.removeFromTop(connectionParamsHeight);
@@ -115,13 +137,23 @@ void NanoAmpControlUI::paint (Graphics& g)
 	g.drawLine(juce::Line<float>(headerBounds.getBottomLeft().toFloat(), headerBounds.getBottomRight().toFloat()));
 
 	auto gnrlCtrlBounds = bounds.removeFromTop(buttonHeight);
+	gnrlCtrlBounds.removeFromTop(1); // to not have the line above being partly painted over by our following rect fill
+	g.setColour(getLookAndFeel().findColour(juce::TextEditor::ColourIds::backgroundColourId));
+	g.fillRect(gnrlCtrlBounds);
+	g.setColour(getLookAndFeel().findColour(juce::TextEditor::ColourIds::outlineColourId));
 	g.drawLine(juce::Line<float>(gnrlCtrlBounds.getBottomLeft().toFloat(), gnrlCtrlBounds.getBottomRight().toFloat()));
 
 	for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
 	{
 		auto channelCtrlBounds = bounds.removeFromLeft(channelWidth);
+		g.setColour(getLookAndFeel().findColour(juce::TextEditor::ColourIds::outlineColourId));
 		g.drawLine(juce::Line<float>(channelCtrlBounds.getTopRight().toFloat(), channelCtrlBounds.getBottomRight().toFloat()));
 	}
+
+	bounds.removeFromTop(1); // to not have the line above being partly painted over by our following rect fill
+	bounds.removeFromLeft(1); // to not have the line above being partly painted over by our following rect fill
+	g.setColour(getLookAndFeel().findColour(juce::TextEditor::ColourIds::backgroundColourId));
+	g.fillRect(bounds);
 }
 
 void NanoAmpControlUI::resized()
@@ -132,7 +164,7 @@ void NanoAmpControlUI::resized()
 	auto margin = 5;
 	auto connectionParamsHeight = 35;
 	auto buttonHeight = 35;
-	auto channelWidth = getWidth() / GetAmpChannelCount();
+	auto channelWidth = getWidth() / (GetAmpChannelCount() + 1);
 
 	auto bounds = getLocalBounds();
 
@@ -161,6 +193,10 @@ void NanoAmpControlUI::resized()
 		if (m_AmpChannelGainSliders.find(ch) != m_AmpChannelGainSliders.end())
 			m_AmpChannelGainSliders.at(ch)->setBounds(gainBounds.removeFromLeft(channelWidth).reduced(margin));
 	}
+
+	m_RelativeLabel->setBounds(channelLabelBounds.reduced(margin));
+	m_RelativeMuteButton->setBounds(muteBounds.reduced(margin));
+	m_RelativeGainSlider->setBounds(gainBounds.reduced(margin));
 }
 
 void NanoAmpControlUI::lookAndFeelChanged()
@@ -174,6 +210,14 @@ void NanoAmpControlUI::buttonClicked(Button* button)
 	{
 		if (onPwrOnOff)
 			onPwrOnOff(button->getToggleState());
+	}
+	else if (button == m_RelativeMuteButton.get())
+	{
+		for (auto const& muteButtonKV : m_AmpChannelMuteButtons)
+		{
+			if (muteButtonKV.second)
+				muteButtonKV.second->setToggleState(m_RelativeMuteButton->getToggleState(), juce::sendNotification);
+		}
 	}
 	else
 	{
@@ -190,13 +234,30 @@ void NanoAmpControlUI::buttonClicked(Button* button)
 
 void NanoAmpControlUI::sliderValueChanged(Slider* slider)
 {
-	auto gainSliderKV = std::find_if(m_AmpChannelGainSliders.begin(), m_AmpChannelGainSliders.end(), [slider](const auto& val) { return val.second.get() == slider; });
-	if (gainSliderKV != m_AmpChannelGainSliders.end() && gainSliderKV->second)
+	if (slider == m_RelativeGainSlider.get())
 	{
-		auto& channel = gainSliderKV->first;
-		auto& gainSlider = gainSliderKV->second;
-		if (onChannelGain)
-			onChannelGain(channel, static_cast<float>(gainSlider->getValue()));
+		auto relativeGainSliderValue = m_RelativeGainSlider->getValue();
+		auto gainDeltaValue = relativeGainSliderValue - m_lastKnownRelativeGainSliderValue;
+		for (auto const& gainSliderKV : m_AmpChannelGainSliders)
+		{
+			if (gainSliderKV.second)
+			{
+				auto sliderValue = gainSliderKV.second->getValue();
+				gainSliderKV.second->setValue(sliderValue + gainDeltaValue, juce::sendNotification);
+			}
+		}
+		m_lastKnownRelativeGainSliderValue = relativeGainSliderValue;
+	}
+	else
+	{
+		auto gainSliderKV = std::find_if(m_AmpChannelGainSliders.begin(), m_AmpChannelGainSliders.end(), [slider](const auto& val) { return val.second.get() == slider; });
+		if (gainSliderKV != m_AmpChannelGainSliders.end() && gainSliderKV->second)
+		{
+			auto& channel = gainSliderKV->first;
+			auto& gainSlider = gainSliderKV->second;
+			if (onChannelGain)
+				onChannelGain(channel, static_cast<float>(gainSlider->getValue()));
+		}
 	}
 }
 

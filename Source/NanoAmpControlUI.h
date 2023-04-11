@@ -94,6 +94,12 @@ private:
     std::map<std::uint16_t, std::unique_ptr<TextButton>>        m_AmpChannelMuteButtons;
     std::map<std::uint16_t, std::unique_ptr<Label>>             m_AmpChannelLabels;
 
+    std::unique_ptr<Slider>                                     m_RelativeGainSlider;
+    std::unique_ptr<TextButton>                                 m_RelativeMuteButton;
+    std::unique_ptr<Label>                                      m_RelativeLabel;
+
+    double  m_lastKnownRelativeGainSliderValue{ 0.0 };
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NanoAmpControlUI)
 };
