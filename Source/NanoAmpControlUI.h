@@ -75,6 +75,8 @@ public:
 
     //==============================================================================
     bool SetPwrOnOff(const bool on) override;
+    bool SetChannelISP(const std::uint16_t channel, const bool isp) override;
+    bool SetChannelGR(const std::uint16_t channel, const bool gr) override;
     bool SetChannelMute(const std::uint16_t channel, const bool mute) override;
     bool SetChannelGain(const std::uint16_t channel, const float gain) override;
     void SetConnectionState(const NanoAmpControlInterface::ConnectionState state) override;
@@ -95,6 +97,8 @@ private:
     std::map<std::uint16_t, std::unique_ptr<Slider>>            m_AmpChannelGainSliders;
     std::map<std::uint16_t, std::unique_ptr<TextButton>>        m_AmpChannelMuteButtons;
     std::map<std::uint16_t, std::unique_ptr<Label>>             m_AmpChannelLabels;
+    std::map<std::uint16_t, std::unique_ptr<LedComponent>>      m_AmpChannelIspLeds;
+    std::map<std::uint16_t, std::unique_ptr<LedComponent>>      m_AmpChannelGrLeds;
 
     std::unique_ptr<Slider>                                     m_RelativeGainSlider;
     std::unique_ptr<TextButton>                                 m_RelativeMuteButton;

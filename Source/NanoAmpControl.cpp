@@ -37,6 +37,14 @@ NanoAmpControl::NanoAmpControl()
         if (m_NanoAmpControlUI)
             m_NanoAmpControlUI->SetPwrOnOff(on);
     };
+    m_NanoAmpControlProcessor->onChannelISP = [=](std::uint16_t channel, bool isp) {
+        if (m_NanoAmpControlUI)
+            m_NanoAmpControlUI->SetChannelISP(channel, isp);
+    };
+    m_NanoAmpControlProcessor->onChannelGR = [=](std::uint16_t channel, bool gr) {
+        if (m_NanoAmpControlUI)
+            m_NanoAmpControlUI->SetChannelGR(channel, gr);
+    };
     m_NanoAmpControlProcessor->onChannelMute = [=](std::uint16_t channel, bool mute) {
         if (m_NanoAmpControlUI)
             m_NanoAmpControlUI->SetChannelMute(channel, mute);

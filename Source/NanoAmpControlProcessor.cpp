@@ -360,6 +360,16 @@ bool NanoAmpControlProcessor::SetPwrOnOff(const bool on)
     return false;
 }
 
+bool NanoAmpControlProcessor::SetChannelISP(const std::uint16_t, const bool)
+{
+    return false;
+}
+
+bool NanoAmpControlProcessor::SetChannelGR(const std::uint16_t, const bool)
+{
+    return false;
+}
+
 bool NanoAmpControlProcessor::SetChannelMute(const std::uint16_t channel, const bool mute)
 {
     std::uint32_t handle;
