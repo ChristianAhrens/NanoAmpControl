@@ -48,6 +48,7 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
 
 	m_ipAndPortEditor = std::make_unique<TextEditor>();
 	m_ipAndPortEditor->setTextToShowWhenEmpty(address + ";" + juce::String(port), getLookAndFeel().findColour(juce::TextEditor::ColourIds::textColourId).darker().darker());
+	m_ipAndPortEditor->setJustification(juce::Justification::centred);
 	m_ipAndPortEditor->addListener(this);
 	addAndMakeVisible(m_ipAndPortEditor.get());
 
@@ -136,9 +137,9 @@ void NanoAmpControlUI::paint (Graphics& g)
 {
     juce::Component::paint(g);
 
-	auto connectionParamsHeight = 35;
+	auto connectionParamsHeight = 41;
 	auto infoIconsWidth = connectionParamsHeight;
-	auto buttonHeight = 35;
+	auto buttonHeight = 41;
 	auto channelWidth = getWidth() / (GetAmpChannelCount() + 1);
 
 	auto bounds = getLocalBounds();
@@ -170,11 +171,13 @@ void NanoAmpControlUI::resized()
 	if (GetAmpChannelCount() < 1)
 		return;
 
-	auto margin = 5;
-	auto marginEx = 7;
-	auto connectionParamsHeight = 35;
+	auto marginS = 4;
+	auto margin = 6;
+	auto marginEx = 8;
+	auto connectionParamsHeight = 41;
 	auto infoIconsWidth = connectionParamsHeight;
-	auto buttonHeight = 35;
+	auto labelHeight = 24;
+	auto buttonHeight = 41;
 	auto channelWidth = getWidth() / (GetAmpChannelCount() + 1);
 
 	auto bounds = getLocalBounds();
@@ -190,7 +193,7 @@ void NanoAmpControlUI::resized()
 	auto pwrOnBounds = bounds.removeFromTop(buttonHeight).reduced(margin);
 	m_AmpPowerOnButton->setBounds(pwrOnBounds);
 
-	auto channelLabelBounds = bounds.removeFromTop(buttonHeight);
+	auto channelLabelBounds = bounds.removeFromTop(labelHeight);
 	auto muteBounds = bounds.removeFromTop(buttonHeight);
 	auto gainBounds = bounds;
 
