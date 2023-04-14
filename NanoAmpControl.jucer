@@ -124,7 +124,7 @@
     </XCODE_MAC>
     <XCODE_IPHONE targetFolder="Builds/iOS" smallIcon="gU6pke" iosBackgroundAudio="1"
                   iosDevelopmentTeamID="SB7Q3PP4FQ" UISupportsDocumentBrowser="1"
-                  customLaunchStoryboard="Resources/Deployment/iOS/Launchscreen.storyboard"
+                  customLaunchStoryboard="Resources/Deployment/iOS/LaunchScreen.storyboard"
                   bigIcon="gU6pke" microphonePermissionNeeded="1">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug"/>
