@@ -369,7 +369,7 @@ bool NanoAmpControlUI::SetChannelGR(const std::uint16_t channel, const bool gr)
 {
 	if (m_AmpChannelGrLeds.find(channel) != m_AmpChannelGrLeds.end())
 	{
-		m_AmpChannelGrLeds.at(channel)->SetState(gr ? LedComponent::State::Red : LedComponent::Grey);
+		m_AmpChannelGrLeds.at(channel)->SetState(gr ? LedComponent::State::Yellow : LedComponent::Grey);
 		return true;
 	}
 	else
