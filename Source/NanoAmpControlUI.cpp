@@ -96,7 +96,7 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
 		m_AmpChannelMuteButtons.insert(std::make_pair(ch, std::make_unique<juce::TextButton>()));
 		m_AmpChannelMuteButtons.at(ch)->setClickingTogglesState(true);
 		m_AmpChannelMuteButtons.at(ch)->setButtonText("Mute");
-		m_AmpChannelMuteButtons.at(ch)->setColour(juce::TextButton::ColourIds::buttonOnColourId, juce::Colours::indianred);
+		m_AmpChannelMuteButtons.at(ch)->setColour(juce::TextButton::ColourIds::buttonOnColourId, juce::Colour(0xf1, 0x00, 0x15));
 		m_AmpChannelMuteButtons.at(ch)->addListener(this);
 		addAndMakeVisible(m_AmpChannelMuteButtons.at(ch).get());
 	}

@@ -122,10 +122,9 @@
         <MODULEPATH id="juce_osc" path="submodules/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
-    <XCODE_IPHONE targetFolder="Builds/iOS" smallIcon="gU6pke" iosBackgroundAudio="1"
-                  iosDevelopmentTeamID="SB7Q3PP4FQ" UISupportsDocumentBrowser="1"
+    <XCODE_IPHONE targetFolder="Builds/iOS" smallIcon="gU6pke" iosDevelopmentTeamID="SB7Q3PP4FQ"
                   customLaunchStoryboard="Resources/Deployment/iOS/LaunchScreen.storyboard"
-                  bigIcon="gU6pke" microphonePermissionNeeded="1">
+                  bigIcon="gU6pke">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug"/>
         <CONFIGURATION isDebug="0" name="Release"/>
