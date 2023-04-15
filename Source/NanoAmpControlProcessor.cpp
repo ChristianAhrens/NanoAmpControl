@@ -202,10 +202,10 @@ bool NanoAmpControlProcessor::UpdateObjectValues(const NanoOcp1::Ocp1Notificatio
         }
         else if (notifObj->MatchesObject(&ovlCmdDef))
         {
-            //std::uint16_t switchSetting = NanoOcp1::DataToUint16(notifObj->GetParameterData());
-            //
-            //if (onChannelOVL)
-            //    onChannelOVL(ch, switchSetting == 1);
+            std::uint16_t switchSetting = NanoOcp1::DataToUint16(notifObj->GetParameterData());
+            
+            if (onChannelOVL)
+                onChannelOVL(ch, switchSetting == 1);
 
             return true;
         }
@@ -276,10 +276,10 @@ bool NanoAmpControlProcessor::UpdateObjectValues(const std::uint32_t ONo, const 
         }
         else if (ONo == NanoOcp1::GetONo(1, 0, ch, NanoOcp1::ChStatus_Ovl_DxDy))
         {
-            //std::uint16_t switchSetting = NanoOcp1::DataToUint16(responseObj->GetParameterData());
-            //
-            //if (onChannelOVL)
-            //    onChannelOVL(ch, switchSetting == 1);
+            std::uint16_t switchSetting = NanoOcp1::DataToUint16(responseObj->GetParameterData());
+            
+            if (onChannelOVL)
+                onChannelOVL(ch, switchSetting == 1);
 
             return true;
         }
@@ -475,6 +475,11 @@ bool NanoAmpControlProcessor::SetChannelISP(const std::uint16_t, const bool)
 }
 
 bool NanoAmpControlProcessor::SetChannelGR(const std::uint16_t, const bool)
+{
+    return false;
+}
+
+bool NanoAmpControlProcessor::SetChannelOVL(const std::uint16_t, const bool)
 {
     return false;
 }

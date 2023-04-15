@@ -119,6 +119,15 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
 
 	for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
 	{
+		m_AmpChannelOvlLeds.insert(std::make_pair(ch, std::make_unique<LedComponent>()));
+		m_AmpChannelOvlLeds.at(ch)->SetTextLabel("OVL");
+		m_AmpChannelOvlLeds.at(ch)->SetOutlineThickness(1.0f);
+		m_AmpChannelOvlLeds.at(ch)->SetState(LedComponent::Grey);
+		addAndMakeVisible(m_AmpChannelOvlLeds.at(ch).get());
+	}
+
+	for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
+	{
 		m_AmpChannelLabels.insert(std::make_pair(ch, std::make_unique<Label>("AmpChannelLabel", "Ch " + juce::String(ch))));
 		m_AmpChannelLabels.at(ch)->setJustificationType(juce::Justification::centred);
 		addAndMakeVisible(m_AmpChannelLabels.at(ch).get());
@@ -211,37 +220,47 @@ void NanoAmpControlUI::resized()
 	auto pwrOnBounds = bounds.removeFromTop(buttonHeight).reduced(margin);
 	m_AmpPowerOnButton->setBounds(pwrOnBounds);
 
-	auto ispAndGrLedSize = buttonHeight < (channelWidth / 2) ? buttonHeight : (channelWidth / 2);
-	auto ispAndGrLedBounds = bounds.removeFromTop(ispAndGrLedSize);
+	auto ispAndGrAndOvlLedSize = buttonHeight < (channelWidth / 3) ? buttonHeight : (channelWidth / 3);
+	auto ispAndGrAndOvlLedBounds = bounds.removeFromTop(ispAndGrAndOvlLedSize);
 	auto channelLabelBounds = bounds.removeFromTop(labelHeight);
 	auto muteBounds = bounds.removeFromTop(buttonHeight);
 	auto gainBounds = bounds;
+	auto ledMargin = ispAndGrAndOvlLedSize / 8;
 
 	for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
 	{
+		auto ledChBounds = ispAndGrAndOvlLedBounds.removeFromLeft(channelWidth);
+		ledChBounds.reduce((ledChBounds.getWidth() - 3 * ispAndGrAndOvlLedSize) / 2, 0);
+
 		if (m_AmpChannelIspLeds.find(ch) != m_AmpChannelIspLeds.end())
-			m_AmpChannelIspLeds.at(ch)->setBounds(ispAndGrLedBounds
-				.removeFromLeft(channelWidth / 2)
-				.removeFromRight(ispAndGrLedSize)
-				.reduced(marginS));
+			m_AmpChannelIspLeds.at(ch)->setBounds(ledChBounds
+				.removeFromLeft(ispAndGrAndOvlLedSize)
+				.reduced(ledMargin));
 
 		if (m_AmpChannelGrLeds.find(ch) != m_AmpChannelGrLeds.end())
-			m_AmpChannelGrLeds.at(ch)->setBounds(ispAndGrLedBounds
-				.removeFromLeft(channelWidth / 2)
-				.removeFromLeft(ispAndGrLedSize)
-				.reduced(marginS));
+			m_AmpChannelGrLeds.at(ch)->setBounds(ledChBounds
+				.removeFromLeft(ispAndGrAndOvlLedSize)
+				.reduced(ledMargin));
+
+		if (m_AmpChannelOvlLeds.find(ch) != m_AmpChannelOvlLeds.end())
+			m_AmpChannelOvlLeds.at(ch)->setBounds(ledChBounds
+				.removeFromLeft(ispAndGrAndOvlLedSize)
+				.reduced(ledMargin));
 
 		if (m_AmpChannelLabels.find(ch) != m_AmpChannelLabels.end())
 			m_AmpChannelLabels.at(ch)->setBounds(channelLabelBounds
-				.removeFromLeft(channelWidth).reduced(marginS));
+				.removeFromLeft(channelWidth)
+				.reduced(marginS));
 
 		if (m_AmpChannelMuteButtons.find(ch) != m_AmpChannelMuteButtons.end())
 			m_AmpChannelMuteButtons.at(ch)->setBounds(muteBounds
-				.removeFromLeft(channelWidth).reduced(margin));
+				.removeFromLeft(channelWidth)
+				.reduced(margin));
 
 		if (m_AmpChannelGainSliders.find(ch) != m_AmpChannelGainSliders.end())
 			m_AmpChannelGainSliders.at(ch)->setBounds(gainBounds
-				.removeFromLeft(channelWidth).reduced(margin));
+				.removeFromLeft(channelWidth)
+				.reduced(margin));
 	}
 
 	m_RelativeLabel->setBounds(channelLabelBounds.reduced(margin));
@@ -349,6 +368,17 @@ bool NanoAmpControlUI::SetChannelGR(const std::uint16_t channel, const bool gr)
 	if (m_AmpChannelGrLeds.find(channel) != m_AmpChannelGrLeds.end())
 	{
 		m_AmpChannelGrLeds.at(channel)->SetState(gr ? LedComponent::State::Red : LedComponent::Grey);
+		return true;
+	}
+	else
+		return false;
+}
+
+bool NanoAmpControlUI::SetChannelOVL(const std::uint16_t channel, const bool ovl)
+{
+	if (m_AmpChannelOvlLeds.find(channel) != m_AmpChannelOvlLeds.end())
+	{
+		m_AmpChannelOvlLeds.at(channel)->SetState(ovl ? LedComponent::State::Red : LedComponent::Grey);
 		return true;
 	}
 	else

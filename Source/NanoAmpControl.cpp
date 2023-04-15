@@ -45,6 +45,10 @@ NanoAmpControl::NanoAmpControl()
         if (m_NanoAmpControlUI)
             m_NanoAmpControlUI->SetChannelGR(channel, gr);
     };
+    m_NanoAmpControlProcessor->onChannelOVL = [=](std::uint16_t channel, bool ovl) {
+        if (m_NanoAmpControlUI)
+            m_NanoAmpControlUI->SetChannelOVL(channel, ovl);
+    };
     m_NanoAmpControlProcessor->onChannelMute = [=](std::uint16_t channel, bool mute) {
         if (m_NanoAmpControlUI)
             m_NanoAmpControlUI->SetChannelMute(channel, mute);
