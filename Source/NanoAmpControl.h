@@ -46,9 +46,10 @@ public:
         Active,
         Subscribed,
     };
-
+    
 public:
     NanoAmpControlInterface(const std::uint16_t ampChannelCount) : m_ampChannelCount(ampChannelCount) {};
+    virtual ~NanoAmpControlInterface() {};
 
     //==============================================================================
     virtual bool SetPwrOnOff(const bool on) = 0;
