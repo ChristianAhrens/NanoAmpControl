@@ -54,6 +54,9 @@ public:
 
     //==============================================================================
     bool SetPwrOnOff(const bool on) override;
+    bool SetChannelISP(const std::uint16_t channel, const bool isp) override;
+    bool SetChannelGR(const std::uint16_t channel, const bool gr) override;
+    bool SetChannelOVL(const std::uint16_t channel, const bool ovl) override;
     bool SetChannelMute(const std::uint16_t channel, const bool mute) override;
     bool SetChannelGain(const std::uint16_t channel, const float gain) override;
 

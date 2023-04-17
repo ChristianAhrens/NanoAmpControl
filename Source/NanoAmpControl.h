@@ -46,12 +46,16 @@ public:
         Active,
         Subscribed,
     };
-
+    
 public:
     NanoAmpControlInterface(const std::uint16_t ampChannelCount) : m_ampChannelCount(ampChannelCount) {};
+    virtual ~NanoAmpControlInterface() {};
 
     //==============================================================================
     virtual bool SetPwrOnOff(const bool on) = 0;
+    virtual bool SetChannelISP(const std::uint16_t channel, const bool isp) = 0;
+    virtual bool SetChannelGR(const std::uint16_t channel, const bool gr) = 0;
+    virtual bool SetChannelOVL(const std::uint16_t channel, const bool ovl) = 0;
     virtual bool SetChannelMute(const std::uint16_t channel, const bool mute) = 0;
     virtual bool SetChannelGain(const std::uint16_t channel, const float gain) = 0;
 
@@ -60,6 +64,9 @@ public:
 
     //==============================================================================
     std::function<void(const bool on)>                                  onPwrOnOff;
+    std::function<void(const std::uint16_t channel, const bool isp)>    onChannelISP;
+    std::function<void(const std::uint16_t channel, const bool gr)>     onChannelGR;
+    std::function<void(const std::uint16_t channel, const bool ovl)>    onChannelOVL;
     std::function<void(const std::uint16_t channel, const bool mute)>   onChannelMute;
     std::function<void(const std::uint16_t channel, const float gain)>  onChannelGain;
     std::function<void(const ConnectionState state)>                    onConnectionStateChanged;

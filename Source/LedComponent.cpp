@@ -58,18 +58,18 @@ const juce::Colour LedComponent::GetColourForState(const State stateValue)
     switch (stateValue)
     {
     case White:
-        return juce::Colours::white;
+            return juce::Colour(0xff, 0xff, 0xff);//juce::Colours::white;
     case Grey:
-        return juce::Colours::grey;
+            return juce::Colour(0x7d, 0x7d, 0x7d);//juce::Colours::grey;
     case Red:
-        return juce::Colours::red;
+            return juce::Colour(0xf3, 0x00, 0x14);//juce::Colours::red;
     case Yellow:
-        return juce::Colours::yellow;
+            return juce::Colour(0xfe, 0xff, 0x00);//juce::Colours::yellowgreen;
     case Green:
-        return juce::Colours::green;
+        return juce::Colour(0x54, 0xad, 0x20);//juce::Colours::forestgreen;
     case Off:
     default:
-        return juce::Colours::darkgrey;
+            return juce::Colour(0x43, 0x43, 0x43);//juce::Colours::darkgrey;
     }
 }
 

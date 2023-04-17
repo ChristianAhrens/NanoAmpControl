@@ -35,11 +35,12 @@ public:
     ~MainComponent() override;
     
     //==========================================================================
-    void paint(juce::Graphics& g);
+    void paint(juce::Graphics& g) override;
     void resized() override;
 
 private:
-    std::unique_ptr<NanoAmpControl::NanoAmpControl>    m_ampControl;
+    std::unique_ptr<NanoAmpControl::NanoAmpControl>     m_ampControl;
+    juce::SharedResourcePointer<juce::TooltipWindow>    m_tooltipWindow;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
