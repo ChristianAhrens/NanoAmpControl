@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+## [0.1.1] - 2023-04-17
+### Added
+- Added ISP, GR, OVL led elements to UI and implemented backend support
+
+### Changed
+
+### Fixed
+
 ## [0.1.0] - 2023-04-11
 ### Added
 - Added initial featureset: 4ch mute+gain and relative controls incl. mdns amp discovery
