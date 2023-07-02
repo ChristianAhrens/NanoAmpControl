@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+## [0.1.2] - 2023-07-02
+### Added
+- Added GrHead levelmeter and implemented backend support
+- Added support for detecting amp type from mdns data (DxDy vs. Amp5D)
+
+### Changed
+
+### Fixed
+
 ## [0.1.1] - 2023-04-17
 ### Added
 - Added ISP, GR, OVL led elements to UI and implemented backend support
