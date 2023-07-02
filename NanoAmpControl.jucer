@@ -72,6 +72,8 @@
       </GROUP>
     </GROUP>
     <GROUP id="{0480E33C-041F-2346-F9AA-44BBEAD80CFE}" name="Source">
+      <FILE id="JDeCjr" name="LevelMeter.cpp" compile="1" resource="0" file="Source/LevelMeter.cpp"/>
+      <FILE id="oFKbhB" name="LevelMeter.h" compile="0" resource="0" file="Source/LevelMeter.h"/>
       <FILE id="nd4oaC" name="LedComponent.cpp" compile="1" resource="0"
             file="Source/LedComponent.cpp"/>
       <FILE id="wdmEGA" name="LedComponent.h" compile="0" resource="0" file="Source/LedComponent.h"/>

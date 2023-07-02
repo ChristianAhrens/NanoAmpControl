@@ -19,6 +19,7 @@
 #include "NanoAmpControlUI.h"
 
 #include "LedComponent.h"
+#include "LevelMeter.h"
 
 #include <ZeroconfDiscoverComponent.h>
 
@@ -49,7 +50,7 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
 	auto port = 50014;
 
 	m_ipAndPortEditor = std::make_unique<juce::TextEditor>();
-	m_ipAndPortEditor->setTextToShowWhenEmpty(address + ";" + juce::String(port), getLookAndFeel().findColour(juce::TextEditor::ColourIds::textColourId).darker().darker());
+	m_ipAndPortEditor->setTextToShowWhenEmpty(address + ":" + juce::String(port), getLookAndFeel().findColour(juce::TextEditor::ColourIds::textColourId).darker().darker());
 	m_ipAndPortEditor->setJustification(juce::Justification::centred);
 	m_ipAndPortEditor->addListener(this);
 	addAndMakeVisible(m_ipAndPortEditor.get());
@@ -59,7 +60,7 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
 		ignoreUnused(type);
 		if (m_ipAndPortEditor)
 		{
-			m_ipAndPortEditor->setTooltip(juce::String(info->ip) + ";" + juce::String(info->port));
+			m_ipAndPortEditor->setTooltip(juce::String(info->ip) + ":" + juce::String(info->port));
 			m_ipAndPortEditor->setText(juce::String(info->name).upToFirstOccurrenceOf("._oca",false, true));
 		}
 		if (onConnectionParametersEdited)
@@ -89,6 +90,15 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
 		m_AmpChannelGainSliders.at(ch)->setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxAbove, false, 60, 15);
 		m_AmpChannelGainSliders.at(ch)->addListener(this);
 		addAndMakeVisible(m_AmpChannelGainSliders.at(ch).get());
+	}
+
+	for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
+	{
+		m_AmpChannelLevelMeters.insert(std::make_pair(ch, std::make_unique<LevelMeter>()));
+		m_AmpChannelLevelMeters.at(ch)->SetLevelRange(juce::Range<float>(-140.0f, 0.0f));
+		m_AmpChannelLevelMeters.at(ch)->SetLevelValue(-140.0f);
+		m_AmpChannelLevelMeters.at(ch)->SetLevelPeakValue(-140.0f);
+		addAndMakeVisible(m_AmpChannelLevelMeters.at(ch).get());
 	}
 
 	for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
@@ -156,6 +166,7 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
 	m_RelativeLabel = std::make_unique<juce::Label>("AmpChannelLabel", "Rel.");
 	m_RelativeLabel->setJustificationType(juce::Justification::centred);
 	addAndMakeVisible(m_RelativeLabel.get());
+
 }
 
 NanoAmpControlUI::~NanoAmpControlUI()
@@ -226,7 +237,7 @@ void NanoAmpControlUI::resized()
 	auto ispAndGrAndOvlLedBounds = bounds.removeFromTop(ispAndGrAndOvlLedSize);
 	auto channelLabelBounds = bounds.removeFromTop(labelHeight);
 	auto muteBounds = bounds.removeFromTop(buttonHeight);
-	auto gainBounds = bounds;
+	auto gainAndLevelsBounds = bounds;
 	auto ledMargin = ispAndGrAndOvlLedSize / 8;
 
 	for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
@@ -260,14 +271,19 @@ void NanoAmpControlUI::resized()
 				.reduced(margin));
 
 		if (m_AmpChannelGainSliders.find(ch) != m_AmpChannelGainSliders.end())
-			m_AmpChannelGainSliders.at(ch)->setBounds(gainBounds
-				.removeFromLeft(channelWidth)
-				.reduced(margin));
+			m_AmpChannelGainSliders.at(ch)->setBounds(gainAndLevelsBounds
+				.removeFromLeft(static_cast<int>(channelWidth * 0.7f))
+				.reduced(margin / 2));
+
+		if (m_AmpChannelLevelMeters.find(ch) != m_AmpChannelLevelMeters.end())
+			m_AmpChannelLevelMeters.at(ch)->setBounds(gainAndLevelsBounds
+				.removeFromLeft(static_cast<int>(channelWidth * 0.3f))
+				.reduced(margin / 2));
 	}
 
 	m_RelativeLabel->setBounds(channelLabelBounds.reduced(margin));
 	m_RelativeMuteButton->setBounds(muteBounds.reduced(margin));
-	m_RelativeGainSlider->setBounds(gainBounds.reduced(margin));
+	m_RelativeGainSlider->setBounds(gainAndLevelsBounds.reduced(margin));
 }
 
 void NanoAmpControlUI::lookAndFeelChanged()
@@ -336,8 +352,8 @@ void NanoAmpControlUI::textEditorReturnKeyPressed(juce::TextEditor& editor)
 {
 	if (&editor == m_ipAndPortEditor.get())
 	{
-		auto ip = juce::IPAddress(editor.getText().upToFirstOccurrenceOf(";", false, true));
-		auto port = editor.getText().fromLastOccurrenceOf(";", false, true).getIntValue();
+		auto ip = juce::IPAddress(editor.getText().upToFirstOccurrenceOf(":", false, true));
+		auto port = editor.getText().fromLastOccurrenceOf(":", false, true).getIntValue();
 
 		juce::Range<int> tcpPortRange{ 1, 0xffff };
 		if (!ip.isNull() && tcpPortRange.contains(port))
@@ -352,6 +368,28 @@ bool NanoAmpControlUI::SetPwrOnOff(const bool on)
 		m_AmpPowerOnButton->setToggleState(on, juce::dontSendNotification);
 
 	return true;
+}
+
+bool NanoAmpControlUI::SetChannelLevel(const std::uint16_t channel, const float level)
+{
+	if (m_AmpChannelLevelMeters.find(channel) != m_AmpChannelLevelMeters.end())
+	{
+		m_AmpChannelLevelMeters.at(channel)->SetLevelValue(level);
+		return true;
+	}
+	else
+		return false;
+}
+
+bool NanoAmpControlUI::SetChannelLevelPeak(const std::uint16_t channel, const float levelPeak)
+{
+	if (m_AmpChannelLevelMeters.find(channel) != m_AmpChannelLevelMeters.end())
+	{
+		m_AmpChannelLevelMeters.at(channel)->SetLevelPeakValue(levelPeak);
+		return true;
+	}
+	else
+		return false;
 }
 
 bool NanoAmpControlUI::SetChannelISP(const std::uint16_t channel, const bool isp)

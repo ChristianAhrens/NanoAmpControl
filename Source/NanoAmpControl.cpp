@@ -37,6 +37,14 @@ NanoAmpControl::NanoAmpControl()
         if (m_NanoAmpControlUI)
             m_NanoAmpControlUI->SetPwrOnOff(on);
     };
+    m_NanoAmpControlProcessor->onChannelLevel = [=](std::uint16_t channel, float level) {
+        if (m_NanoAmpControlUI)
+            m_NanoAmpControlUI->SetChannelLevel(channel, level);
+    };
+    m_NanoAmpControlProcessor->onChannelLevelPeak = [=](std::uint16_t channel, float levelPeak) {
+        if (m_NanoAmpControlUI)
+            m_NanoAmpControlUI->SetChannelLevelPeak(channel, levelPeak);
+    };
     m_NanoAmpControlProcessor->onChannelISP = [=](std::uint16_t channel, bool isp) {
         if (m_NanoAmpControlUI)
             m_NanoAmpControlUI->SetChannelISP(channel, isp);
@@ -86,10 +94,18 @@ NanoAmpControl::NanoAmpControl()
 NanoAmpControl::~NanoAmpControl()
 {
     m_NanoAmpControlProcessor->onPwrOnOff = nullptr;
+    m_NanoAmpControlProcessor->onChannelLevel = nullptr;
+    m_NanoAmpControlProcessor->onChannelISP = nullptr;
+    m_NanoAmpControlProcessor->onChannelGR = nullptr;
+    m_NanoAmpControlProcessor->onChannelOVL = nullptr;
     m_NanoAmpControlProcessor->onChannelMute = nullptr;
     m_NanoAmpControlProcessor->onChannelGain = nullptr;
     m_NanoAmpControlProcessor->onConnectionStateChanged = nullptr;
     m_NanoAmpControlUI->onPwrOnOff = nullptr;
+    m_NanoAmpControlUI->onChannelLevel = nullptr;
+    m_NanoAmpControlUI->onChannelISP = nullptr;
+    m_NanoAmpControlUI->onChannelGR = nullptr;
+    m_NanoAmpControlUI->onChannelOVL = nullptr;
     m_NanoAmpControlUI->onChannelMute = nullptr;
     m_NanoAmpControlUI->onChannelGain = nullptr;
     m_NanoAmpControlUI->onConnectionParametersEdited = nullptr;

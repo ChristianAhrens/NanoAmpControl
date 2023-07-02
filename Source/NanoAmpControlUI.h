@@ -39,6 +39,7 @@ namespace NanoAmpControl
  * Fwd. Decls
  */
 class LedComponent;
+class LevelMeter;
 
 //==============================================================================
 /*
@@ -75,6 +76,8 @@ public:
 
     //==============================================================================
     bool SetPwrOnOff(const bool on) override;
+    bool SetChannelLevel(const std::uint16_t channel, const float level) override;
+    bool SetChannelLevelPeak(const std::uint16_t channel, const float levelPeak) override;
     bool SetChannelISP(const std::uint16_t channel, const bool isp) override;
     bool SetChannelGR(const std::uint16_t channel, const bool gr) override;
     bool SetChannelOVL(const std::uint16_t channel, const bool ovl) override;
@@ -83,8 +86,6 @@ public:
     void SetConnectionState(const NanoAmpControlInterface::ConnectionState state) override;
 
 private:
-    //==========================================================================
-
     //==========================================================================
     std::unique_ptr<DrawableButton>								m_helpButton;
 
@@ -98,6 +99,7 @@ private:
     std::map<std::uint16_t, std::unique_ptr<Slider>>            m_AmpChannelGainSliders;
     std::map<std::uint16_t, std::unique_ptr<TextButton>>        m_AmpChannelMuteButtons;
     std::map<std::uint16_t, std::unique_ptr<Label>>             m_AmpChannelLabels;
+    std::map<std::uint16_t, std::unique_ptr<LevelMeter>>        m_AmpChannelLevelMeters;
     std::map<std::uint16_t, std::unique_ptr<LedComponent>>      m_AmpChannelIspLeds;
     std::map<std::uint16_t, std::unique_ptr<LedComponent>>      m_AmpChannelGrLeds;
     std::map<std::uint16_t, std::unique_ptr<LedComponent>>      m_AmpChannelOvlLeds;
@@ -106,6 +108,7 @@ private:
     std::unique_ptr<TextButton>                                 m_RelativeMuteButton;
     std::unique_ptr<Label>                                      m_RelativeLabel;
 
+    //==========================================================================
     double  m_lastKnownRelativeGainSliderValue{ 0.0 };
 
 
