@@ -56,10 +56,11 @@ NanoAmpControlProcessor::~NanoAmpControlProcessor()
 		m_nanoOcp1Client->stop();
 }
 
-bool NanoAmpControlProcessor::UpdateConnectionParameters(const juce::String& address, const std::uint16_t port)
+bool NanoAmpControlProcessor::UpdateConnectionParameters(const juce::String& address, const std::uint16_t port, const AmpType ampType)
 {
 	auto success = true;
 	success = success && m_nanoOcp1Client->stop();
+    SetAmpType(ampType);
 	m_nanoOcp1Client->setAddress(address);
 	m_nanoOcp1Client->setPort(port);
 	success = success && m_nanoOcp1Client->start();
@@ -75,6 +76,16 @@ void NanoAmpControlProcessor::SetConnectionState(const ConnectionState state)
         if (onConnectionStateChanged)
             onConnectionStateChanged(state);
     }
+}
+
+void NanoAmpControlProcessor::SetAmpType(const NanoAmpControlInterface::AmpType ampType)
+{
+    m_ampType = ampType;
+}
+
+NanoAmpControlInterface::AmpType NanoAmpControlProcessor::GetAmpType()
+{
+    return m_ampType;
 }
 
 bool NanoAmpControlProcessor::ProcessReceivedOcp1Message(const juce::MemoryBlock& message)
@@ -145,7 +156,11 @@ bool NanoAmpControlProcessor::UpdateObjectValues(const NanoOcp1::Ocp1Notificatio
     // which triggered the notification.
 
     // Objects without any further addressing
-    auto cmdDef = NanoOcp1::DxDy::dbOcaObjectDef_Settings_PwrOn();
+    auto cmdDef = NanoOcp1::Ocp1CommandDefinition();
+    if (GetAmpType() == AmpType::Amp5D)
+        cmdDef = NanoOcp1::Amp5D::dbOcaObjectDef_Settings_PwrOn();
+    else if (GetAmpType() == AmpType::DxDy)
+        cmdDef = NanoOcp1::DxDy::dbOcaObjectDef_Settings_PwrOn();
     if (notifObj->MatchesObject(&cmdDef))
     {
         std::uint16_t switchSetting = NanoOcp1::DataToUint16(notifObj->GetParameterData());
@@ -161,11 +176,26 @@ bool NanoAmpControlProcessor::UpdateObjectValues(const NanoOcp1::Ocp1Notificatio
     {
         auto potCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_Config_PotiLevel(ch);
         auto muteCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_Config_Mute(ch);
-        auto levelCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_Input_Digital_Level(ch);
-        auto levelPeakCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_Input_Digital_LevelPeak(ch);
-        auto ispCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_Isp(ch);
-        auto grCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_Gr(ch);
-        auto ovlCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_Ovl(ch);
+
+        auto ispCmdDef = NanoOcp1::Ocp1CommandDefinition();
+        auto grCmdDef = NanoOcp1::Ocp1CommandDefinition();
+        auto ovlCmdDef = NanoOcp1::Ocp1CommandDefinition();
+        auto headCmdDef = NanoOcp1::Ocp1CommandDefinition();
+        if (GetAmpType() == AmpType::Amp5D)
+        {
+            ispCmdDef = NanoOcp1::Amp5D::dbOcaObjectDef_ChStatus_Isp(ch);
+            grCmdDef = NanoOcp1::Amp5D::dbOcaObjectDef_ChStatus_Gr(ch);
+            ovlCmdDef = NanoOcp1::Amp5D::dbOcaObjectDef_ChStatus_Ovl(ch);
+            headCmdDef = NanoOcp1::Amp5D::dbOcaObjectDef_ChStatus_GrHead(ch);
+        }
+        else if (GetAmpType() == AmpType::DxDy)
+        {
+            ispCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_Isp(ch);
+            grCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_Gr(ch);
+            ovlCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_Ovl(ch);
+            headCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_GrHead(ch);
+        }
+        
         if (notifObj->MatchesObject(&potCmdDef))
         {
             std::float_t newGain = NanoOcp1::DataToFloat(notifObj->GetParameterData());
@@ -184,21 +214,12 @@ bool NanoAmpControlProcessor::UpdateObjectValues(const NanoOcp1::Ocp1Notificatio
 
             return true;
         }
-        else if (notifObj->MatchesObject(&levelCmdDef))
+        else if (notifObj->MatchesObject(&headCmdDef))
         {
-            std::float_t newLevel = NanoOcp1::DataToFloat(notifObj->GetParameterData());
+            std::float_t newHeadroom = NanoOcp1::DataToFloat(notifObj->GetParameterData());
 
-            if (onChannelLevel)
-                onChannelLevel(ch, newLevel);
-
-            return true;
-        }
-        else if (notifObj->MatchesObject(&levelPeakCmdDef))
-        {
-            std::float_t newLevelPeak = NanoOcp1::DataToFloat(notifObj->GetParameterData());
-
-            if (onChannelLevelPeak)
-                onChannelLevelPeak(ch, newLevelPeak);
+            if (onChannelHeadroom)
+                onChannelHeadroom(ch, newHeadroom);
 
             return true;
         }
@@ -229,11 +250,6 @@ bool NanoAmpControlProcessor::UpdateObjectValues(const NanoOcp1::Ocp1Notificatio
 
             return true;
         }
-
-        //// Objects with additional record addressing dimension
-        //for (std::uint16_t rec = 1; rec <= GetAmpRecordCount(); ch++)
-        //{
-        //}
     }
 
     return false;
@@ -276,25 +292,8 @@ bool NanoAmpControlProcessor::UpdateObjectValues(const std::uint32_t ONo, const 
     
             return true;
         }
-        else if(ONo == NanoOcp1::GetONo(1, ch, 0, NanoOcp1::DxDy::Input_Digital_Level)) // ch is used as record value here
-        {
-            std::float_t newLevel = NanoOcp1::DataToFloat(responseObj->GetParameterData());
-
-            if (onChannelLevel)
-                onChannelLevel(ch, newLevel);
-
-            return true;
-        }
-        else if (ONo == NanoOcp1::GetONo(1, ch, 0, NanoOcp1::DxDy::Input_Digital_LevelPeak)) // ch is used as record value here
-        {
-            std::float_t newLevelPeak = NanoOcp1::DataToFloat(responseObj->GetParameterData());
-
-            if (onChannelLevelPeak)
-                onChannelLevelPeak(ch, newLevelPeak);
-
-            return true;
-        }
-        else if (ONo == NanoOcp1::GetONo(1, 0, ch, NanoOcp1::DxDy::ChStatus_Isp))
+        else if (ONo == NanoOcp1::GetONo(1, 0, ch, NanoOcp1::DxDy::ChStatus_Isp)
+            || ONo == NanoOcp1::GetONo(1, 0, ch, NanoOcp1::Amp5D::ChStatus_Isp))
         {
             std::uint16_t switchSetting = NanoOcp1::DataToUint16(responseObj->GetParameterData());
 
@@ -303,7 +302,8 @@ bool NanoAmpControlProcessor::UpdateObjectValues(const std::uint32_t ONo, const 
 
             return true;
         }
-        else if (ONo == NanoOcp1::GetONo(1, 0, ch, NanoOcp1::DxDy::ChStatus_Gr))
+        else if (ONo == NanoOcp1::GetONo(1, 0, ch, NanoOcp1::DxDy::ChStatus_Gr)
+            || ONo == NanoOcp1::GetONo(1, 0, ch, NanoOcp1::Amp5D::ChStatus_Gr))
         {
             std::uint16_t switchSetting = NanoOcp1::DataToUint16(responseObj->GetParameterData());
 
@@ -312,7 +312,8 @@ bool NanoAmpControlProcessor::UpdateObjectValues(const std::uint32_t ONo, const 
 
             return true;
         }
-        else if (ONo == NanoOcp1::GetONo(1, 0, ch, NanoOcp1::DxDy::ChStatus_Ovl))
+        else if (ONo == NanoOcp1::GetONo(1, 0, ch, NanoOcp1::DxDy::ChStatus_Ovl)
+            || ONo == NanoOcp1::GetONo(1, 0, ch, NanoOcp1::DxDy::ChStatus_Ovl))
         {
             std::uint16_t switchSetting = NanoOcp1::DataToUint16(responseObj->GetParameterData());
             
@@ -321,11 +322,16 @@ bool NanoAmpControlProcessor::UpdateObjectValues(const std::uint32_t ONo, const 
 
             return true;
         }
-    
-        //// Objects with additional record addressing dimension
-        //for (std::uint16_t rec = 1; rec <= GetAmpRecordCount(); ch++)
-        //{
-        //}
+        else if (ONo == NanoOcp1::GetONo(1, ch, 0, NanoOcp1::DxDy::ChStatus_GrHead)
+            || ONo == NanoOcp1::GetONo(1, ch, 0, NanoOcp1::Amp5D::ChStatus_GrHead))
+        {
+            std::float_t newHeadroom = NanoOcp1::DataToFloat(responseObj->GetParameterData());
+
+            if (onChannelHeadroom)
+                onChannelHeadroom(ch, newHeadroom);
+
+            return true;
+        }
     }
 
     return false;
@@ -341,9 +347,12 @@ bool NanoAmpControlProcessor::CreateObjectSubscriptions()
     std::uint32_t handle = 0;
 
     // subscribe pwrOn
-    success = success && m_nanoOcp1Client->sendData(
-        NanoOcp1::Ocp1CommandResponseRequired(
-            NanoOcp1::DxDy::dbOcaObjectDef_Settings_PwrOn().AddSubscriptionCommand(), handle).GetMemoryBlock());
+    auto pwrOnCmdDef = NanoOcp1::Ocp1CommandDefinition();
+    if (GetAmpType() == AmpType::Amp5D)
+        pwrOnCmdDef = NanoOcp1::Amp5D::dbOcaObjectDef_Settings_PwrOn().AddSubscriptionCommand();
+    else if (GetAmpType() == AmpType::DxDy)
+        pwrOnCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_Settings_PwrOn().AddSubscriptionCommand();
+    success = success && m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(pwrOnCmdDef, handle).GetMemoryBlock());
     AddPendingSubscriptionHandle(handle);
 
     // subscribe potilevel for all channels
@@ -364,48 +373,51 @@ bool NanoAmpControlProcessor::CreateObjectSubscriptions()
         AddPendingSubscriptionHandle(handle);
     }
 
-    // subscribe digital level for all channels
-    for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
-    {
-        success = success && m_nanoOcp1Client->sendData(
-            NanoOcp1::Ocp1CommandResponseRequired(
-                NanoOcp1::DxDy::dbOcaObjectDef_Input_Digital_Level(ch).AddSubscriptionCommand(), handle).GetMemoryBlock());
-        AddPendingSubscriptionHandle(handle);
-    }
-
-    // subscribe digital levelPeak for all channels
-    for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
-    {
-        success = success && m_nanoOcp1Client->sendData(
-            NanoOcp1::Ocp1CommandResponseRequired(
-                NanoOcp1::DxDy::dbOcaObjectDef_Input_Digital_LevelPeak(ch).AddSubscriptionCommand(), handle).GetMemoryBlock());
-        AddPendingSubscriptionHandle(handle);
-    }
-
     // subscribe isp for all channels
     for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
     {
-        success = success && m_nanoOcp1Client->sendData(
-            NanoOcp1::Ocp1CommandResponseRequired(
-                NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_Isp(ch).AddSubscriptionCommand(), handle).GetMemoryBlock());
+        auto ispCmdDef = NanoOcp1::Ocp1CommandDefinition();
+        if (GetAmpType() == AmpType::Amp5D)
+            ispCmdDef = NanoOcp1::Amp5D::dbOcaObjectDef_ChStatus_Isp(ch).AddSubscriptionCommand();
+        else if (GetAmpType() == AmpType::DxDy)
+            ispCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_Isp(ch).AddSubscriptionCommand();
+        success = success && m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(ispCmdDef, handle).GetMemoryBlock());
         AddPendingSubscriptionHandle(handle);
     }
 
     // subscribe gr for all channels
     for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
     {
-        success = success && m_nanoOcp1Client->sendData(
-            NanoOcp1::Ocp1CommandResponseRequired(
-                NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_Gr(ch).AddSubscriptionCommand(), handle).GetMemoryBlock());
+        auto grCmdDef = NanoOcp1::Ocp1CommandDefinition();
+        if (GetAmpType() == AmpType::Amp5D)
+            grCmdDef = NanoOcp1::Amp5D::dbOcaObjectDef_ChStatus_Gr(ch).AddSubscriptionCommand();
+        else if (GetAmpType() == AmpType::DxDy)
+            grCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_Gr(ch).AddSubscriptionCommand();
+        success = success && m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(grCmdDef, handle).GetMemoryBlock());
         AddPendingSubscriptionHandle(handle);
     }
 
     // subscribe ovl for all channels
     for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
     {
-        success = success && m_nanoOcp1Client->sendData(
-            NanoOcp1::Ocp1CommandResponseRequired(
-                NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_Ovl(ch).AddSubscriptionCommand(), handle).GetMemoryBlock());
+        auto ovlCmdDef = NanoOcp1::Ocp1CommandDefinition();
+        if (GetAmpType() == AmpType::Amp5D)
+            ovlCmdDef = NanoOcp1::Amp5D::dbOcaObjectDef_ChStatus_Ovl(ch).AddSubscriptionCommand();
+        else if (GetAmpType() == AmpType::DxDy)
+            ovlCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_Ovl(ch).AddSubscriptionCommand();
+        success = success && m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(ovlCmdDef, handle).GetMemoryBlock());
+        AddPendingSubscriptionHandle(handle);
+    }
+
+    // subscribe headroom for all channels
+    for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
+    {
+        auto headCmdDef = NanoOcp1::Ocp1CommandDefinition();
+        if (GetAmpType() == AmpType::Amp5D)
+            headCmdDef = NanoOcp1::Amp5D::dbOcaObjectDef_ChStatus_GrHead(ch).AddSubscriptionCommand();
+        else if (GetAmpType() == AmpType::DxDy)
+            headCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_GrHead(ch).AddSubscriptionCommand();
+        success = success && m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(headCmdDef, handle).GetMemoryBlock());
         AddPendingSubscriptionHandle(handle);
     }
 
@@ -421,10 +433,14 @@ bool NanoAmpControlProcessor::QueryObjectValues()
 
     std::uint32_t handle = 0;
 
-    auto pwrCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_Settings_PwrOn();
     // query pwrOn
-    success = success && m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(pwrCmdDef, handle).GetMemoryBlock());
-    AddPendingGetValueHandle(handle, pwrCmdDef.m_targetOno);
+    auto pwrOnCmdDef = NanoOcp1::Ocp1CommandDefinition();
+    if (GetAmpType() == AmpType::Amp5D)
+        pwrOnCmdDef = NanoOcp1::Amp5D::dbOcaObjectDef_Settings_PwrOn();
+    else if (GetAmpType() == AmpType::DxDy)
+        pwrOnCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_Settings_PwrOn();
+    success = success && m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(pwrOnCmdDef, handle).GetMemoryBlock());
+    AddPendingGetValueHandle(handle, pwrOnCmdDef.m_targetOno);
 
     // query potilevel for all channels
     for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
@@ -450,18 +466,14 @@ bool NanoAmpControlProcessor::QueryObjectValues()
         AddPendingGetValueHandle(handle, levelCmdDef.m_targetOno);
     }
 
-    // query digital levelPeak for all channels
-    for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
-    {
-        auto levelPeakCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_Input_Digital_LevelPeak(ch);
-        success = success && m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(levelPeakCmdDef, handle).GetMemoryBlock());
-        AddPendingGetValueHandle(handle, levelPeakCmdDef.m_targetOno);
-    }
-
     // query isp for all channels
     for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
     {
-        auto ispCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_Isp(ch);
+        auto ispCmdDef = NanoOcp1::Ocp1CommandDefinition();
+        if (GetAmpType() == AmpType::Amp5D)
+            ispCmdDef = NanoOcp1::Amp5D::dbOcaObjectDef_ChStatus_Isp(ch);
+        else if (GetAmpType() == AmpType::DxDy)
+            ispCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_Isp(ch);
         success = success && m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(ispCmdDef, handle).GetMemoryBlock());
         AddPendingGetValueHandle(handle, ispCmdDef.m_targetOno);
     }
@@ -469,7 +481,11 @@ bool NanoAmpControlProcessor::QueryObjectValues()
     // query gr for all channels
     for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
     {
-        auto grCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_Gr(ch);
+        auto grCmdDef = NanoOcp1::Ocp1CommandDefinition();
+        if (GetAmpType() == AmpType::Amp5D)
+            grCmdDef = NanoOcp1::Amp5D::dbOcaObjectDef_ChStatus_Gr(ch);
+        else if (GetAmpType() == AmpType::DxDy)
+            grCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_Gr(ch);
         success = success && m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(grCmdDef, handle).GetMemoryBlock());
         AddPendingGetValueHandle(handle, grCmdDef.m_targetOno);
     }
@@ -477,9 +493,25 @@ bool NanoAmpControlProcessor::QueryObjectValues()
     // query ovl for all channels
     for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
     {
-        auto ovlCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_Ovl(ch);
+        auto ovlCmdDef = NanoOcp1::Ocp1CommandDefinition();
+        if (GetAmpType() == AmpType::Amp5D)
+            ovlCmdDef = NanoOcp1::Amp5D::dbOcaObjectDef_ChStatus_Ovl(ch);
+        else if (GetAmpType() == AmpType::DxDy)
+            ovlCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_Ovl(ch);
         success = success && m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(ovlCmdDef, handle).GetMemoryBlock());
         AddPendingGetValueHandle(handle, ovlCmdDef.m_targetOno);
+    }
+
+    // query headroom for all channels
+    for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
+    {
+        auto headCmdDef = NanoOcp1::Ocp1CommandDefinition();
+        if (GetAmpType() == AmpType::Amp5D)
+            headCmdDef = NanoOcp1::Amp5D::dbOcaObjectDef_ChStatus_GrHead(ch);
+        else if (GetAmpType() == AmpType::DxDy)
+            headCmdDef = NanoOcp1::DxDy::dbOcaObjectDef_ChStatus_GrHead(ch);
+        success = success && m_nanoOcp1Client->sendData(NanoOcp1::Ocp1CommandResponseRequired(headCmdDef, handle).GetMemoryBlock());
+        AddPendingGetValueHandle(handle, headCmdDef.m_targetOno);
     }
 
     return success;
@@ -534,20 +566,21 @@ bool NanoAmpControlProcessor::SetPwrOnOff(const bool on)
 {
     std::uint32_t handle;
     if (m_nanoOcp1Client && m_nanoOcp1Client->isConnected())
-        return m_nanoOcp1Client->sendData(
-            NanoOcp1::Ocp1CommandResponseRequired(
-                NanoOcp1::DxDy::dbOcaObjectDef_Settings_PwrOn().SetValueCommand(on ? 1 : 0), handle).GetMemoryBlock());
+    {
+        if (GetAmpType() == AmpType::Amp5D)
+        {
+            return m_nanoOcp1Client->sendData(
+                NanoOcp1::Ocp1CommandResponseRequired(
+                    NanoOcp1::Amp5D::dbOcaObjectDef_Settings_PwrOn().SetValueCommand(on ? 1 : 0), handle).GetMemoryBlock());
+        }
+        else if (GetAmpType() == AmpType::DxDy)
+        {
+            return m_nanoOcp1Client->sendData(
+                NanoOcp1::Ocp1CommandResponseRequired(
+                    NanoOcp1::DxDy::dbOcaObjectDef_Settings_PwrOn().SetValueCommand(on ? 1 : 0), handle).GetMemoryBlock());
+        }
+    }
     
-    return false;
-}
-
-bool NanoAmpControlProcessor::SetChannelLevel(const std::uint16_t, const float)
-{
-    return false;
-}
-
-bool NanoAmpControlProcessor::SetChannelLevelPeak(const std::uint16_t, const float)
-{
     return false;
 }
 
@@ -562,6 +595,11 @@ bool NanoAmpControlProcessor::SetChannelGR(const std::uint16_t, const bool)
 }
 
 bool NanoAmpControlProcessor::SetChannelOVL(const std::uint16_t, const bool)
+{
+    return false;
+}
+
+bool NanoAmpControlProcessor::SetChannelHeadroom(const std::uint16_t, const float)
 {
     return false;
 }

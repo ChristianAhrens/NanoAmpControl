@@ -72,15 +72,14 @@ public:
     void textEditorReturnKeyPressed(TextEditor& editor) override;
 
     //==============================================================================
-    std::function<bool(const juce::String&, const std::uint16_t)> onConnectionParametersEdited;
+    std::function<bool(const juce::String&, const std::uint16_t, const AmpType)> onConnectionParametersEdited;
 
     //==============================================================================
     bool SetPwrOnOff(const bool on) override;
-    bool SetChannelLevel(const std::uint16_t channel, const float level) override;
-    bool SetChannelLevelPeak(const std::uint16_t channel, const float levelPeak) override;
     bool SetChannelISP(const std::uint16_t channel, const bool isp) override;
     bool SetChannelGR(const std::uint16_t channel, const bool gr) override;
     bool SetChannelOVL(const std::uint16_t channel, const bool ovl) override;
+    bool SetChannelHeadroom(const std::uint16_t channel, const float headroom) override;
     bool SetChannelMute(const std::uint16_t channel, const bool mute) override;
     bool SetChannelGain(const std::uint16_t channel, const float gain) override;
     void SetConnectionState(const NanoAmpControlInterface::ConnectionState state) override;

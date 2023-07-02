@@ -64,7 +64,7 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
 			m_ipAndPortEditor->setText(juce::String(info->name).upToFirstOccurrenceOf("._oca",false, true));
 		}
 		if (onConnectionParametersEdited)
-			onConnectionParametersEdited(juce::String(info->ip), static_cast<std::uint16_t>(info->port));
+			onConnectionParametersEdited(juce::String(info->ip), static_cast<std::uint16_t>(info->port), juce::String(info->name).contains("5D") ? AmpType::Amp5D : AmpType::DxDy);
 	};
 	m_zeroconfDiscoverButton->clearServices();
 	m_zeroconfDiscoverButton->addDiscoverService(JUCEAppBasics::ZeroconfDiscoverComponent::ZST_OCA);
@@ -95,9 +95,9 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
 	for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
 	{
 		m_AmpChannelLevelMeters.insert(std::make_pair(ch, std::make_unique<LevelMeter>()));
-		m_AmpChannelLevelMeters.at(ch)->SetLevelRange(juce::Range<float>(-140.0f, 0.0f));
-		m_AmpChannelLevelMeters.at(ch)->SetLevelValue(-140.0f);
-		m_AmpChannelLevelMeters.at(ch)->SetLevelPeakValue(-140.0f);
+		m_AmpChannelLevelMeters.at(ch)->SetLevelRange(juce::Range<float>(-32.0f, 32.0f));
+		m_AmpChannelLevelMeters.at(ch)->SetLevelValue(-32.0f);
+		m_AmpChannelLevelMeters.at(ch)->SetLevelPeakValue(-32.0f);
 		addAndMakeVisible(m_AmpChannelLevelMeters.at(ch).get());
 	}
 
@@ -358,7 +358,7 @@ void NanoAmpControlUI::textEditorReturnKeyPressed(juce::TextEditor& editor)
 		juce::Range<int> tcpPortRange{ 1, 0xffff };
 		if (!ip.isNull() && tcpPortRange.contains(port))
 			if (onConnectionParametersEdited)
-				onConnectionParametersEdited(ip.toString(), static_cast<std::uint16_t>(port));
+				onConnectionParametersEdited(ip.toString(), static_cast<std::uint16_t>(port), AmpType::DxDy);
 	}
 }
 
@@ -370,22 +370,12 @@ bool NanoAmpControlUI::SetPwrOnOff(const bool on)
 	return true;
 }
 
-bool NanoAmpControlUI::SetChannelLevel(const std::uint16_t channel, const float level)
+bool NanoAmpControlUI::SetChannelHeadroom(const std::uint16_t channel, const float headroom)
 {
 	if (m_AmpChannelLevelMeters.find(channel) != m_AmpChannelLevelMeters.end())
 	{
-		m_AmpChannelLevelMeters.at(channel)->SetLevelValue(level);
-		return true;
-	}
-	else
-		return false;
-}
-
-bool NanoAmpControlUI::SetChannelLevelPeak(const std::uint16_t channel, const float levelPeak)
-{
-	if (m_AmpChannelLevelMeters.find(channel) != m_AmpChannelLevelMeters.end())
-	{
-		m_AmpChannelLevelMeters.at(channel)->SetLevelPeakValue(levelPeak);
+		m_AmpChannelLevelMeters.at(channel)->SetLevelValue(headroom);
+		m_AmpChannelLevelMeters.at(channel)->SetLevelPeakValue(headroom);
 		return true;
 	}
 	else
