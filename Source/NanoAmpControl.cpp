@@ -37,6 +37,10 @@ NanoAmpControl::NanoAmpControl()
         if (m_NanoAmpControlUI)
             m_NanoAmpControlUI->SetPwrOnOff(on);
     };
+    m_NanoAmpControlProcessor->onChannelHeadroom = [=](std::uint16_t channel, float headroom) {
+        if (m_NanoAmpControlUI)
+            m_NanoAmpControlUI->SetChannelHeadroom(channel, headroom);
+    };
     m_NanoAmpControlProcessor->onChannelISP = [=](std::uint16_t channel, bool isp) {
         if (m_NanoAmpControlUI)
             m_NanoAmpControlUI->SetChannelISP(channel, isp);
@@ -75,9 +79,9 @@ NanoAmpControl::NanoAmpControl()
             m_NanoAmpControlProcessor->SetChannelGain(channel, gain);
     };
     //m_NanoAmpControlUI->onConnectionStateChanged is intentionally not connected here!
-    m_NanoAmpControlUI->onConnectionParametersEdited = [=](const juce::String& address, const std::uint16_t port) {
+    m_NanoAmpControlUI->onConnectionParametersEdited = [=](const juce::String& address, const std::uint16_t port, const NanoAmpControlInterface::AmpType ampType) {
         if (m_NanoAmpControlProcessor)
-            return m_NanoAmpControlProcessor->UpdateConnectionParameters(address, port);
+            return m_NanoAmpControlProcessor->UpdateConnectionParameters(address, port, ampType);
         else
             return false;
     };
@@ -86,10 +90,18 @@ NanoAmpControl::NanoAmpControl()
 NanoAmpControl::~NanoAmpControl()
 {
     m_NanoAmpControlProcessor->onPwrOnOff = nullptr;
+    m_NanoAmpControlProcessor->onChannelISP = nullptr;
+    m_NanoAmpControlProcessor->onChannelGR = nullptr;
+    m_NanoAmpControlProcessor->onChannelOVL = nullptr;
+    m_NanoAmpControlProcessor->onChannelHeadroom = nullptr;
     m_NanoAmpControlProcessor->onChannelMute = nullptr;
     m_NanoAmpControlProcessor->onChannelGain = nullptr;
     m_NanoAmpControlProcessor->onConnectionStateChanged = nullptr;
     m_NanoAmpControlUI->onPwrOnOff = nullptr;
+    m_NanoAmpControlUI->onChannelISP = nullptr;
+    m_NanoAmpControlUI->onChannelGR = nullptr;
+    m_NanoAmpControlUI->onChannelOVL = nullptr;
+    m_NanoAmpControlUI->onChannelHeadroom = nullptr;
     m_NanoAmpControlUI->onChannelMute = nullptr;
     m_NanoAmpControlUI->onChannelGain = nullptr;
     m_NanoAmpControlUI->onConnectionParametersEdited = nullptr;

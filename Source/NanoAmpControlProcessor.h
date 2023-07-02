@@ -50,13 +50,14 @@ public:
     ~NanoAmpControlProcessor();
 
     //==============================================================================
-    bool UpdateConnectionParameters(const juce::String& address, const std::uint16_t port);
+    bool UpdateConnectionParameters(const juce::String& address, const std::uint16_t port, const AmpType ampType);
 
     //==============================================================================
     bool SetPwrOnOff(const bool on) override;
     bool SetChannelISP(const std::uint16_t channel, const bool isp) override;
     bool SetChannelGR(const std::uint16_t channel, const bool gr) override;
     bool SetChannelOVL(const std::uint16_t channel, const bool ovl) override;
+    bool SetChannelHeadroom(const std::uint16_t channel, const float headroom) override;
     bool SetChannelMute(const std::uint16_t channel, const bool mute) override;
     bool SetChannelGain(const std::uint16_t channel, const float gain) override;
 
@@ -64,6 +65,10 @@ public:
     void SetConnectionState(const NanoAmpControlInterface::ConnectionState state) override;
 
 protected:
+    //==============================================================================
+    void SetAmpType(const AmpType ampType);
+    AmpType GetAmpType();
+
     //==============================================================================
     bool ProcessReceivedOcp1Message(const juce::MemoryBlock& message);
     bool CreateObjectSubscriptions();
@@ -89,6 +94,7 @@ private:
     ConnectionState                             m_connectionState{ Unknown };
     std::vector<std::uint32_t>                  m_pendingSubscriptionHandles;
     std::map<std::uint32_t, std::uint32_t>      m_pendingGetValueHandlesWithONo;
+    AmpType                                     m_ampType;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoAmpControlProcessor)

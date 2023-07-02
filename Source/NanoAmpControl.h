@@ -46,6 +46,12 @@ public:
         Active,
         Subscribed,
     };
+
+    enum AmpType
+    {
+        DxDy,
+        Amp5D,
+    };
     
 public:
     NanoAmpControlInterface(const std::uint16_t ampChannelCount) : m_ampChannelCount(ampChannelCount) {};
@@ -56,6 +62,7 @@ public:
     virtual bool SetChannelISP(const std::uint16_t channel, const bool isp) = 0;
     virtual bool SetChannelGR(const std::uint16_t channel, const bool gr) = 0;
     virtual bool SetChannelOVL(const std::uint16_t channel, const bool ovl) = 0;
+    virtual bool SetChannelHeadroom(const std::uint16_t channel, const float headroom) = 0;
     virtual bool SetChannelMute(const std::uint16_t channel, const bool mute) = 0;
     virtual bool SetChannelGain(const std::uint16_t channel, const float gain) = 0;
 
@@ -63,13 +70,14 @@ public:
     virtual void SetConnectionState(const ConnectionState state) = 0;
 
     //==============================================================================
-    std::function<void(const bool on)>                                  onPwrOnOff;
-    std::function<void(const std::uint16_t channel, const bool isp)>    onChannelISP;
-    std::function<void(const std::uint16_t channel, const bool gr)>     onChannelGR;
-    std::function<void(const std::uint16_t channel, const bool ovl)>    onChannelOVL;
-    std::function<void(const std::uint16_t channel, const bool mute)>   onChannelMute;
-    std::function<void(const std::uint16_t channel, const float gain)>  onChannelGain;
-    std::function<void(const ConnectionState state)>                    onConnectionStateChanged;
+    std::function<void(const bool on)>                                      onPwrOnOff;
+    std::function<void(const std::uint16_t channel, const bool isp)>        onChannelISP;
+    std::function<void(const std::uint16_t channel, const bool gr)>         onChannelGR;
+    std::function<void(const std::uint16_t channel, const bool ovl)>        onChannelOVL;
+    std::function<void(const std::uint16_t channel, const float headroom)>  onChannelHeadroom;
+    std::function<void(const std::uint16_t channel, const bool mute)>       onChannelMute;
+    std::function<void(const std::uint16_t channel, const float gain)>      onChannelGain;
+    std::function<void(const ConnectionState state)>                        onConnectionStateChanged;
 
 protected:
     //==============================================================================
