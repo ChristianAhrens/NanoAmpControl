@@ -56,15 +56,35 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
 	addAndMakeVisible(m_ipAndPortEditor.get());
 
 	m_zeroconfDiscoverButton = std::make_unique<JUCEAppBasics::ZeroconfDiscoverComponent>(false, false);
-	m_zeroconfDiscoverButton->onServiceSelected = [=](JUCEAppBasics::ZeroconfDiscoverComponent::ZeroconfServiceType type, ZeroconfSearcher::ZeroconfSearcher::ServiceInfo* info) {
-		ignoreUnused(type);
+	m_zeroconfDiscoverButton->onServiceSelected = [=](JUCEAppBasics::ZeroconfDiscoverComponent::ZeroconfServiceType serviceType, ZeroconfSearcher::ZeroconfSearcher::ServiceInfo* info) {
+		ignoreUnused(serviceType);
 		if (m_ipAndPortEditor)
 		{
 			m_ipAndPortEditor->setTooltip(juce::String(info->ip) + ":" + juce::String(info->port));
 			m_ipAndPortEditor->setText(juce::String(info->name).upToFirstOccurrenceOf("._oca",false, true));
 		}
+
+		auto ampType = AmpType::_Dy;
+		auto ampName = juce::String(info->name);
+		if (ampName.contains("5D"))
+		{
+			ampType = AmpType::_5D;
+		}
+		else if (ampName.contains("D20")
+			|| ampName.contains("D80")
+			|| ampName.contains("10D")
+			|| ampName.contains("20D"))
+		{
+			ampType = AmpType::_Dx;
+		}
+		else if (ampName.contains("D40")
+			|| ampName.contains("40D"))
+		{
+			ampType = AmpType::_Dy;
+		}
+
 		if (onConnectionParametersEdited)
-			onConnectionParametersEdited(juce::String(info->ip), static_cast<std::uint16_t>(info->port), juce::String(info->name).contains("5D") ? AmpType::Amp5D : AmpType::DxDy);
+			onConnectionParametersEdited(juce::String(info->ip), static_cast<std::uint16_t>(info->port), ampType);
 	};
 	m_zeroconfDiscoverButton->clearServices();
 	m_zeroconfDiscoverButton->addDiscoverService(JUCEAppBasics::ZeroconfDiscoverComponent::ZST_OCA);
@@ -90,56 +110,38 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
 		m_AmpChannelGainSliders.at(ch)->setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxAbove, false, 60, 15);
 		m_AmpChannelGainSliders.at(ch)->addListener(this);
 		addAndMakeVisible(m_AmpChannelGainSliders.at(ch).get());
-	}
 
-	for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
-	{
 		m_AmpChannelLevelMeters.insert(std::make_pair(ch, std::make_unique<LevelMeter>()));
 		m_AmpChannelLevelMeters.at(ch)->SetLevelRange(juce::Range<float>(-32.0f, 32.0f));
 		m_AmpChannelLevelMeters.at(ch)->SetLevelValue(-32.0f);
 		m_AmpChannelLevelMeters.at(ch)->SetLevelPeakValue(-32.0f);
 		addAndMakeVisible(m_AmpChannelLevelMeters.at(ch).get());
-	}
 
-	for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
-	{
 		m_AmpChannelMuteButtons.insert(std::make_pair(ch, std::make_unique<juce::TextButton>()));
 		m_AmpChannelMuteButtons.at(ch)->setClickingTogglesState(true);
 		m_AmpChannelMuteButtons.at(ch)->setButtonText("Mute");
 		m_AmpChannelMuteButtons.at(ch)->setColour(juce::TextButton::ColourIds::buttonOnColourId, juce::Colour(0xf1, 0x00, 0x15));
 		m_AmpChannelMuteButtons.at(ch)->addListener(this);
 		addAndMakeVisible(m_AmpChannelMuteButtons.at(ch).get());
-	}
 
-	for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
-	{
 		m_AmpChannelIspLeds.insert(std::make_pair(ch, std::make_unique<LedComponent>()));
 		m_AmpChannelIspLeds.at(ch)->SetTextLabel("ISP");
 		m_AmpChannelIspLeds.at(ch)->SetOutlineThickness(1.0f);
 		m_AmpChannelIspLeds.at(ch)->SetState(LedComponent::Grey);
 		addAndMakeVisible(m_AmpChannelIspLeds.at(ch).get());
-	}
 
-	for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
-	{
 		m_AmpChannelGrLeds.insert(std::make_pair(ch, std::make_unique<LedComponent>()));
 		m_AmpChannelGrLeds.at(ch)->SetTextLabel("GR");
 		m_AmpChannelGrLeds.at(ch)->SetOutlineThickness(1.0f);
 		m_AmpChannelGrLeds.at(ch)->SetState(LedComponent::Grey);
 		addAndMakeVisible(m_AmpChannelGrLeds.at(ch).get());
-	}
 
-	for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
-	{
 		m_AmpChannelOvlLeds.insert(std::make_pair(ch, std::make_unique<LedComponent>()));
 		m_AmpChannelOvlLeds.at(ch)->SetTextLabel("OVL");
 		m_AmpChannelOvlLeds.at(ch)->SetOutlineThickness(1.0f);
 		m_AmpChannelOvlLeds.at(ch)->SetState(LedComponent::Grey);
 		addAndMakeVisible(m_AmpChannelOvlLeds.at(ch).get());
-	}
 
-	for (std::uint16_t ch = 1; ch <= GetAmpChannelCount(); ch++)
-	{
 		m_AmpChannelLabels.insert(std::make_pair(ch, std::make_unique<juce::Label>("AmpChannelLabel", "Ch " + juce::String(ch))));
 		m_AmpChannelLabels.at(ch)->setJustificationType(juce::Justification::centred);
 		addAndMakeVisible(m_AmpChannelLabels.at(ch).get());
@@ -358,7 +360,7 @@ void NanoAmpControlUI::textEditorReturnKeyPressed(juce::TextEditor& editor)
 		juce::Range<int> tcpPortRange{ 1, 0xffff };
 		if (!ip.isNull() && tcpPortRange.contains(port))
 			if (onConnectionParametersEdited)
-				onConnectionParametersEdited(ip.toString(), static_cast<std::uint16_t>(port), AmpType::DxDy);
+				onConnectionParametersEdited(ip.toString(), static_cast<std::uint16_t>(port), AmpType::_Dy);
 	}
 }
 
