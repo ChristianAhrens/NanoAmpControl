@@ -49,8 +49,9 @@ public:
 
     enum AmpType
     {
-        DxDy,
-        Amp5D,
+        _Dx,
+        _Dy,
+        _5D,
     };
     
 public:
