@@ -1,6 +1,6 @@
 /* Copyright (c) 2023, Christian Ahrens
  *
- * This file is part of SurroundFieldMixer <https://github.com/ChristianAhrens/NanoAmpControl>
+ * This file is part of NanoAmpControl <https://github.com/ChristianAhrens/NanoAmpControl>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 3.0 as published
@@ -610,4 +610,4 @@ bool NanoAmpControlProcessor::SetChannelGain(const std::uint16_t channel, const 
 }
 
 
-} // namespace SurroundFieldMixer
+} // namespace NanoAmpControl
