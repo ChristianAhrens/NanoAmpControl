@@ -72,6 +72,10 @@
       </GROUP>
     </GROUP>
     <GROUP id="{0480E33C-041F-2346-F9AA-44BBEAD80CFE}" name="Source">
+      <FILE id="I6P5Z1" name="ComponentContainer.cpp" compile="1" resource="0"
+            file="Source/ComponentContainer.cpp"/>
+      <FILE id="VdEw4X" name="ComponentContainer.h" compile="0" resource="0"
+            file="Source/ComponentContainer.h"/>
       <FILE id="JDeCjr" name="LevelMeter.cpp" compile="1" resource="0" file="Source/LevelMeter.cpp"/>
       <FILE id="oFKbhB" name="LevelMeter.h" compile="0" resource="0" file="Source/LevelMeter.h"/>
       <FILE id="nd4oaC" name="LedComponent.cpp" compile="1" resource="0"

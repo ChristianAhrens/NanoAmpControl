@@ -20,38 +20,58 @@
 
 #include <JuceHeader.h>
 
-/**
- * Fwd. decl.
- */
 namespace NanoAmpControl
 {
-    class NanoAmpControl;
-    class ComponentContainer;
-}
 
-class MainComponent   :  public juce::Component
+
+class FillHelperComponent : public juce::Component
+{
+public:
+    //==============================================================================
+    void paint(juce::Graphics& g) override
+    {
+        g.setColour(getLookAndFeel().findColour(juce::TextEditor::outlineColourId));
+        g.fillRect(getLocalBounds().toFloat());
+    }
+};
+
+
+class ComponentContainer : public juce::Component
 {
 public:
     //==========================================================================
-    MainComponent(int ampCount, const juce::Rectangle<int> initSize);
-    ~MainComponent() override;
-    
-    //==========================================================================
-    void paint(juce::Graphics& g) override;
-    void resized() override;
+    enum Direction
+    {
+        Horizontal,
+        Vertical
+    };
 
-protected:
+public:
     //==========================================================================
-    int AddAmpControlInstance();
-    void RemoveAmpControlInstance(int index);
+    ComponentContainer(const Direction layoutDirection, const juce::Rectangle<int>& singleSize);
+    ~ComponentContainer() override;
+
+    void AddComponent(juce::Component* component);
+    void RemoveComponent(juce::Component* component);
+
+    bool IsLayoutingHorizontally();
+    void SetFixWidth(int width);
+    void SetFixHeight(int height);
+
+    void resized() override;
 
 private:
     //==========================================================================
-    int                                                             m_ampControlsIndexCount{ 0 };
-    std::map<int, std::unique_ptr<NanoAmpControl::NanoAmpControl>>  m_ampControls;
-    std::unique_ptr<NanoAmpControl::ComponentContainer>             m_componentsContainer;
-    std::unique_ptr<juce::Viewport>                                 m_viewPort;
-    juce::SharedResourcePointer<juce::TooltipWindow>                m_tooltipWindow;
+    void ProcessSize();
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
+    //==========================================================================
+    std::vector<juce::Component*>                                       m_containedComponents;
+    std::map<juce::Component*, std::unique_ptr<FillHelperComponent>>    m_separatorLines;
+
+    Direction                       m_layoutDirection;
+    juce::Rectangle<int>            m_singleSize;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ComponentContainer)
+};
+
 };
