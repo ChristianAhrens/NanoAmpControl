@@ -55,7 +55,7 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
 	m_ipAndPortEditor->addListener(this);
 	addAndMakeVisible(m_ipAndPortEditor.get());
 
-	m_zeroconfDiscoverButton = std::make_unique<JUCEAppBasics::ZeroconfDiscoverComponent>(false, false);
+	m_zeroconfDiscoverButton = std::make_unique<JUCEAppBasics::ZeroconfDiscoverComponent>("AmpDiscovery");
 	m_zeroconfDiscoverButton->onServiceSelected = [=](JUCEAppBasics::ZeroconfDiscoverComponent::ZeroconfServiceType serviceType, ZeroconfSearcher::ZeroconfSearcher::ServiceInfo* info) {
 		ignoreUnused(serviceType);
 		if (m_ipAndPortEditor)
