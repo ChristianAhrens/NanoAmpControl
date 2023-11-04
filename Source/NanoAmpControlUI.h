@@ -39,7 +39,7 @@ namespace NanoAmpControl
  * Fwd. Decls
  */
 class LedComponent;
-class LevelMeter;
+class LevelMeterWithISPGROVL;
 
 //==============================================================================
 /*
@@ -86,26 +86,23 @@ public:
 
 private:
     //==========================================================================
-    std::unique_ptr<DrawableButton>								m_helpButton;
+    std::unique_ptr<DrawableButton>								        m_helpButton;
 
-    std::unique_ptr<TextEditor>                                 m_ipAndPortEditor;
-    std::unique_ptr<JUCEAppBasics::ZeroconfDiscoverComponent>   m_zeroconfDiscoverButton;
+    std::unique_ptr<TextEditor>                                         m_ipAndPortEditor;
+    std::unique_ptr<JUCEAppBasics::ZeroconfDiscoverComponent>           m_zeroconfDiscoverButton;
 
-    std::unique_ptr<LedComponent>                               m_stateLed;
+    std::unique_ptr<LedComponent>                                       m_stateLed;
 
-    std::unique_ptr<TextButton>                                 m_AmpPowerOnButton;
+    std::unique_ptr<TextButton>                                         m_AmpPowerOnButton;
 
-    std::map<std::uint16_t, std::unique_ptr<Slider>>            m_AmpChannelGainSliders;
-    std::map<std::uint16_t, std::unique_ptr<TextButton>>        m_AmpChannelMuteButtons;
-    std::map<std::uint16_t, std::unique_ptr<Label>>             m_AmpChannelLabels;
-    std::map<std::uint16_t, std::unique_ptr<LevelMeter>>        m_AmpChannelLevelMeters;
-    std::map<std::uint16_t, std::unique_ptr<LedComponent>>      m_AmpChannelIspLeds;
-    std::map<std::uint16_t, std::unique_ptr<LedComponent>>      m_AmpChannelGrLeds;
-    std::map<std::uint16_t, std::unique_ptr<LedComponent>>      m_AmpChannelOvlLeds;
+    std::map<std::uint16_t, std::unique_ptr<Slider>>                    m_AmpChannelGainSliders;
+    std::map<std::uint16_t, std::unique_ptr<TextButton>>                m_AmpChannelMuteButtons;
+    std::map<std::uint16_t, std::unique_ptr<Label>>                     m_AmpChannelLabels;
+    std::map<std::uint16_t, std::unique_ptr<LevelMeterWithISPGROVL>>    m_AmpChannelLevelMeters;
 
-    std::unique_ptr<Slider>                                     m_RelativeGainSlider;
-    std::unique_ptr<TextButton>                                 m_RelativeMuteButton;
-    std::unique_ptr<Label>                                      m_RelativeLabel;
+    std::unique_ptr<Slider>                                             m_RelativeGainSlider;
+    std::unique_ptr<TextButton>                                         m_RelativeMuteButton;
+    std::unique_ptr<Label>                                              m_RelativeLabel;
 
     //==========================================================================
     double  m_lastKnownRelativeGainSliderValue{ 0.0 };

@@ -27,18 +27,36 @@ namespace NanoAmpControl
 class LevelMeter : public juce::Component
 {
 public:
+    enum State
+    {
+        Off,
+        White,
+        Grey,
+        Red,
+        Yellow,
+        Green
+    };
+
+public:
     //==========================================================================
     LevelMeter();
-    ~LevelMeter() override;
+    virtual ~LevelMeter() override;
 
     //==========================================================================
-    void paint(juce::Graphics& g) override;
+    virtual void paint(juce::Graphics& g) override;
 
     //==========================================================================
     void SetLevelValue(const float level);
     void SetLevelPeakValue(const float levelPeak);
 
     void SetLevelRange(const juce::Range<float>& range);
+
+protected:
+    //==========================================================================
+    const juce::Colour GetColourForState(const State stateValue);
+
+    //==========================================================================
+    void paintLevelMeter(juce::Graphics& g, juce::Rectangle<int>& bounds);
 
 private:
     //==========================================================================
@@ -49,5 +67,63 @@ private:
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LevelMeter)
 };
+
+class LevelMeterWithISP : public LevelMeter
+{
+public:
+    //==========================================================================
+    LevelMeterWithISP();
+    virtual ~LevelMeterWithISP() override;
+
+    //==========================================================================
+    virtual void paint(juce::Graphics& g) override;
+
+    //==========================================================================
+    void SetISPState(const bool ispState);
+
+protected:
+    //==========================================================================
+    void paintLevelMeterWithISP(juce::Graphics& g, juce::Rectangle<int>& bounds);
+
+private:
+    //==========================================================================
+    void paintISP(juce::Graphics& g, juce::Rectangle<int>& bounds);
+
+    //==========================================================================
+    bool m_currentISPState{ false };
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LevelMeterWithISP)
+};
+
+class LevelMeterWithISPGROVL : public LevelMeterWithISP
+{
+public:
+    //==========================================================================
+    LevelMeterWithISPGROVL();
+    virtual ~LevelMeterWithISPGROVL() override;
+
+    //==========================================================================
+    virtual void paint(juce::Graphics& g) override;
+
+    //==========================================================================
+    void SetGRState(const bool grState);
+    void SetOVLState(const bool ovlState);
+
+protected:
+    //==========================================================================
+    void paintLevelMeterWithISPGROVL(juce::Graphics& g, juce::Rectangle<int>& bounds);
+
+private:
+    //==========================================================================
+    void paintGR(juce::Graphics& g, juce::Rectangle<int>& bounds);
+    void paintOVL(juce::Graphics& g, juce::Rectangle<int>& bounds);
+
+    //==========================================================================
+    bool m_currentGRState{ false };
+    bool m_currentOVLState{ false };
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LevelMeterWithISPGROVL)
+};
+
 
 };
