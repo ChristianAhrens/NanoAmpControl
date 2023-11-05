@@ -97,7 +97,7 @@ private:
 class NanoAmpControl
 {
 public:
-    NanoAmpControl();
+    NanoAmpControl(int id);
     ~NanoAmpControl();
     
     //==========================================================================
@@ -106,10 +106,15 @@ public:
     //==========================================================================
     static constexpr std::uint16_t s_channelCount{ 4 };
 
+    //==============================================================================
+    std::function<void()>       onAddAmpControlTriggered;
+    std::function<void(int)>    onRemoveAmpControlTriggered;
+
 private:
     //==========================================================================
 
     //==========================================================================
+    int m_id;
     std::unique_ptr<NanoAmpControlProcessor>    m_NanoAmpControlProcessor;
     std::unique_ptr<NanoAmpControlUI>           m_NanoAmpControlUI;
 

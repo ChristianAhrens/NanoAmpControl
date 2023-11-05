@@ -56,23 +56,25 @@ public:
     ~NanoAmpControlUI();
 
     //==============================================================================
-    void paint(Graphics&) override;
+    void paint(juce::Graphics&) override;
     void resized() override;
 
     //==========================================================================
     void lookAndFeelChanged() override;
 
     //==============================================================================
-    void buttonClicked(Button* button) override;
+    void buttonClicked(juce::Button* button) override;
 
     //==============================================================================
-    void sliderValueChanged(Slider* slider) override;
+    void sliderValueChanged(juce::Slider* slider) override;
 
     //==============================================================================
-    void textEditorReturnKeyPressed(TextEditor& editor) override;
+    void textEditorReturnKeyPressed(juce::TextEditor& editor) override;
 
     //==============================================================================
     std::function<bool(const juce::String&, const std::uint16_t, const AmpType)> onConnectionParametersEdited;
+    std::function<void()> onAddClicked;
+    std::function<void()> onRemoveClicked;
 
     //==============================================================================
     bool SetPwrOnOff(const bool on) override;
@@ -86,18 +88,19 @@ public:
 
 private:
     //==========================================================================
-    std::unique_ptr<DrawableButton>								        m_helpButton;
+    std::unique_ptr<juce::PopupMenu>                                    m_optionsPopup;
+    std::unique_ptr<juce::DrawableButton>								m_optionsButton;
 
-    std::unique_ptr<TextEditor>                                         m_ipAndPortEditor;
+    std::unique_ptr<juce::TextEditor>                                   m_ipAndPortEditor;
     std::unique_ptr<JUCEAppBasics::ZeroconfDiscoverComponent>           m_zeroconfDiscoverButton;
 
     std::unique_ptr<LedComponent>                                       m_stateLed;
 
-    std::unique_ptr<TextButton>                                         m_AmpPowerOnButton;
+    std::unique_ptr<juce::TextButton>                                   m_AmpPowerOnButton;
 
-    std::map<std::uint16_t, std::unique_ptr<Slider>>                    m_AmpChannelGainSliders;
-    std::map<std::uint16_t, std::unique_ptr<TextButton>>                m_AmpChannelMuteButtons;
-    std::map<std::uint16_t, std::unique_ptr<Label>>                     m_AmpChannelLabels;
+    std::map<std::uint16_t, std::unique_ptr<juce::Slider>>              m_AmpChannelGainSliders;
+    std::map<std::uint16_t, std::unique_ptr<juce::TextButton>>          m_AmpChannelMuteButtons;
+    std::map<std::uint16_t, std::unique_ptr<juce::Label>>               m_AmpChannelLabels;
     std::map<std::uint16_t, std::unique_ptr<LevelMeterWithISPGROVL>>    m_AmpChannelLevelMeters;
 
     std::unique_ptr<Slider>                                             m_RelativeGainSlider;

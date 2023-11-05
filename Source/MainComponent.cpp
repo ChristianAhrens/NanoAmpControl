@@ -42,11 +42,11 @@ MainComponent::MainComponent(int ampCount, const juce::Rectangle<int> initSize)
 
 MainComponent::~MainComponent()
 {
-    auto activeIndices = std::vector<int>();
+    auto activeIds = std::vector<int>();
     for (auto const& ampControlInstanceKV : m_ampControls)
-        activeIndices.push_back(ampControlInstanceKV.first);
-    for (auto const& activeIndex : activeIndices)
-        RemoveAmpControlInstance(activeIndex);
+        activeIds.push_back(ampControlInstanceKV.first);
+    for (auto const& activeId : activeIds)
+        RemoveAmpControlInstance(activeId);
 
     m_componentsContainer->removeAllChildren();
     m_componentsContainer.reset();
@@ -61,24 +61,30 @@ int MainComponent::AddAmpControlInstance()
     if (!m_componentsContainer)
         return -1;
 
-    auto newIndex = m_ampControlsIndexCount++;
+    auto newId = m_ampControlsIdCount++;
 
-    m_ampControls[newIndex] = std::make_unique<NanoAmpControl::NanoAmpControl>();
-    m_componentsContainer->AddComponent(m_ampControls.at(newIndex)->getUIComponent());
+    m_ampControls[newId] = std::make_unique<NanoAmpControl::NanoAmpControl>(newId);
+    m_ampControls[newId]->onAddAmpControlTriggered = [=]() {
+        AddAmpControlInstance();
+    };
+    m_ampControls[newId]->onRemoveAmpControlTriggered = [=](int id) {
+        RemoveAmpControlInstance(id);
+    };
+    m_componentsContainer->AddComponent(m_ampControls.at(newId)->getUIComponent());
 
-    return newIndex;
+    return newId;
 }
 
-void MainComponent::RemoveAmpControlInstance(int index)
+void MainComponent::RemoveAmpControlInstance(int id)
 {
     jassert(m_componentsContainer);
     if (!m_componentsContainer)
         return;
 
-    if (1 == m_ampControls.count(index) && m_ampControls.at(index)->getUIComponent())
+    if (1 == m_ampControls.count(id) && m_ampControls.at(id)->getUIComponent())
     {
-        m_componentsContainer->RemoveComponent(m_ampControls.at(index)->getUIComponent());
-        m_ampControls.erase(index);
+        m_componentsContainer->RemoveComponent(m_ampControls.at(id)->getUIComponent());
+        m_ampControls.erase(id);
     }
     else
         jassertfalse;

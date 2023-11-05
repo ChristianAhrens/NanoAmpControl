@@ -32,19 +32,65 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
     :	NanoAmpControlInterface(ampChannelCount),
 		juce::Component()
 {
-	m_helpButton = std::make_unique<juce::DrawableButton>("Help", juce::DrawableButton::ButtonStyle::ImageFitted);
-	m_helpButton->onClick = []() {
-		juce::URL("https://github.com/ChristianAhrens/" + juce::JUCEApplication::getInstance()->getApplicationName() + "/blob/main/README.md").launchInDefaultBrowser();
+	// set up the options button that triggers a popup menu for user interaction
+	m_optionsPopup = std::make_unique<juce::PopupMenu>();
+	m_optionsButton = std::make_unique<juce::DrawableButton>("Options", juce::DrawableButton::ButtonStyle::ImageFitted);
+	m_optionsButton->onClick = [this]() {
+		// clear the popup first before populating it anew
+		m_optionsPopup->dismissAllActiveMenus();
+		m_optionsPopup->clear();
+
+		// some info as a title header, since we currently dont have anywhere else to present this info (name+version)
+		m_optionsPopup->addSectionHeader(juce::JUCEApplication::getInstance()->getApplicationName() + " v"
+			+ juce::JUCEApplication::getInstance()->getApplicationVersion());
+
+		m_optionsPopup->addSeparator();
+
+		// add '+' popup menu entry, incl. prep the corresp. icon
+		std::unique_ptr<juce::Drawable> normalAddImage = juce::Drawable::createFromSVG(*(juce::XmlDocument::parse(BinaryData::add_circle24px_svg).get()));
+		normalAddImage->replaceColour(Colours::black, getLookAndFeel().findColour(juce::TextEditor::textColourId));
+		m_optionsPopup->addItem(1, "Add amp ctrl", true, false, std::move(normalAddImage));
+
+		// add '-' popup menu entry, incl. prep the corresp. icon
+		std::unique_ptr<juce::Drawable> normalRemoveImage = juce::Drawable::createFromSVG(*(juce::XmlDocument::parse(BinaryData::remove_circle24px_svg).get()));
+		normalRemoveImage->replaceColour(Colours::black, getLookAndFeel().findColour(juce::TextEditor::textColourId));
+		m_optionsPopup->addItem(2, "Remove this amp ctrl", true, false, std::move(normalRemoveImage));
+
+		m_optionsPopup->addSeparator();
+
+		// add 'github readme' popup menu entry, incl. prep the corresp. icon
+		std::unique_ptr<juce::Drawable> normalHelpImage = juce::Drawable::createFromSVG(*(juce::XmlDocument::parse(BinaryData::help24px_svg).get()));
+		normalHelpImage->replaceColour(Colours::black, getLookAndFeel().findColour(juce::TextEditor::textColourId));
+		m_optionsPopup->addItem(3, "Github README", true, false, std::move(normalHelpImage));
+
+		// show the popup and handle its result in a lambda
+		m_optionsPopup->showMenuAsync(PopupMenu::Options(), [this](int resultingAssiIdx) {
+			switch (resultingAssiIdx)
+			{
+			case 1:
+				if (onAddClicked)
+					onAddClicked();
+				break;
+			case 2:
+				if (onRemoveClicked)
+					onRemoveClicked();
+				break;
+			case 3:
+				juce::URL("https://github.com/ChristianAhrens/" + juce::JUCEApplication::getInstance()->getApplicationName() + "/blob/main/README.md").launchInDefaultBrowser();
+				break;
+			default:
+				break;
+			};
+		});
 	};
-	std::unique_ptr<XmlElement> svg_xml = juce::XmlDocument::parse(BinaryData::help24px_svg);
-	std::unique_ptr<juce::Drawable> image = juce::Drawable::createFromSVG(*(svg_xml.get()));
-	image->replaceColour(Colours::black, getLookAndFeel().findColour(juce::TextEditor::textColourId));
-	m_helpButton->setImages(image.get());
-	m_helpButton->setColour(juce::DrawableButton::backgroundColourId, juce::Colours::transparentWhite);
-	m_helpButton->setColour(juce::DrawableButton::backgroundColourId, juce::Colours::transparentWhite);
-	m_helpButton->setTooltip(juce::JUCEApplication::getInstance()->getApplicationName() + " v"
-		+ juce::JUCEApplication::getInstance()->getApplicationVersion());
-	addAndMakeVisible(m_helpButton.get());
+	std::unique_ptr<XmlElement> svg_xml = juce::XmlDocument::parse(BinaryData::settings24px_svg);
+	std::unique_ptr<juce::Drawable> normalImage = juce::Drawable::createFromSVG(*(svg_xml.get()));
+	normalImage->replaceColour(Colours::black, getLookAndFeel().findColour(juce::TextEditor::textColourId));
+	std::unique_ptr<juce::Drawable> overImage = juce::Drawable::createFromSVG(*(svg_xml.get()));
+	overImage->replaceColour(Colours::black, getLookAndFeel().findColour(juce::TextEditor::highlightedTextColourId));
+	m_optionsButton->setImages(normalImage.get(), overImage.get());
+	m_optionsButton->setColour(juce::DrawableButton::backgroundColourId, juce::Colours::transparentWhite);
+	addAndMakeVisible(m_optionsButton.get());
 
 	auto address = juce::String("127.0.0.1");
 	auto port = 50014;
@@ -176,8 +222,9 @@ void NanoAmpControlUI::paint (juce::Graphics& g)
 	infoIconsBounds = infoIconsBounds.removeFromRight(infoIconsWidth);
 
 	// fill rects first to not have them overpaint follwing line drawing
-	g.setColour(getLookAndFeel().findColour(juce::TextEditor::backgroundColourId));
+	g.setColour(getLookAndFeel().findColour(juce::TextEditor::shadowColourId));
 	g.fillRect(connectionParamsBounds);
+	g.setColour(getLookAndFeel().findColour(juce::TextEditor::backgroundColourId));
 	g.fillRect(bounds.removeFromRight(channelWidth));
 	g.fillRect(gnrlCtrlBounds);
 
@@ -212,7 +259,7 @@ void NanoAmpControlUI::resized()
 	auto infoIconsBounds = headerBounds.removeFromRight(infoIconsWidth);
 	auto zeroconfButtonBounds = headerBounds.removeFromRight(connectionParamsHeight);
 	auto stateLedBounds = headerBounds.removeFromLeft(connectionParamsHeight);
-	m_helpButton->setBounds(infoIconsBounds.reduced(margin));
+	m_optionsButton->setBounds(infoIconsBounds.reduced(margin));
 	m_ipAndPortEditor->setBounds(headerBounds.reduced(margin));
 	m_zeroconfDiscoverButton->setBounds(zeroconfButtonBounds.reduced(margin));
 	m_stateLed->setBounds(stateLedBounds.reduced(marginEx));

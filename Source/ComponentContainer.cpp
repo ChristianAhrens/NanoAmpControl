@@ -73,14 +73,20 @@ void ComponentContainer::RemoveComponent(juce::Component* component)
     auto compoIter = std::find(m_containedComponents.begin(), m_containedComponents.end(), component);
     if (compoIter != m_containedComponents.end())
     {
-        if (1 == m_separatorLines.count(*compoIter) && m_separatorLines.at(*compoIter))
-        {
-            removeChildComponent(m_separatorLines.at(*compoIter).get());
-            m_separatorLines.erase(*compoIter);
-        }
-
         removeChildComponent(*compoIter);
         m_containedComponents.erase(compoIter);
+
+        // clean up separator lines if there are components left
+        if (!m_containedComponents.empty())
+        {
+            auto currLastCompoPtr = m_containedComponents.back();
+            if (1 == m_separatorLines.count(currLastCompoPtr) && m_separatorLines.at(currLastCompoPtr))
+            {
+                removeChildComponent(m_separatorLines.at(currLastCompoPtr).get());
+                m_separatorLines.erase(currLastCompoPtr);
+            }
+        }
+
     }
 
     ProcessSize();

@@ -43,11 +43,11 @@ public:
 protected:
     //==========================================================================
     int AddAmpControlInstance();
-    void RemoveAmpControlInstance(int index);
+    void RemoveAmpControlInstance(int id);
 
 private:
     //==========================================================================
-    int                                                             m_ampControlsIndexCount{ 0 };
+    int                                                             m_ampControlsIdCount{ 0 };
     std::map<int, std::unique_ptr<NanoAmpControl::NanoAmpControl>>  m_ampControls;
     std::unique_ptr<NanoAmpControl::ComponentContainer>             m_componentsContainer;
     std::unique_ptr<juce::Viewport>                                 m_viewPort;
