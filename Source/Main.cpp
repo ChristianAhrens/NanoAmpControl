@@ -137,13 +137,15 @@ public:
             CommandLineParser cmdP(commandLine);
 
             m_customLookAndFeel = std::unique_ptr<LookAndFeel>(new NanoAmpControl::DarkLookAndFeel);
-            Desktop::getInstance().setDefaultLookAndFeel(m_customLookAndFeel.get());
-
+            juce::Desktop::getInstance().setDefaultLookAndFeel(m_customLookAndFeel.get());
+            
             setUsingNativeTitleBar (true);
             setContentOwned (new MainComponent(cmdP._ampCount, cmdP._initSize), true);
 
-           #if JUCE_IOS || JUCE_ANDROID || JUCE_LINUX
+           #if JUCE_IOS || JUCE_ANDROID
             setFullScreen (true);
+           #elif JUCE_LINUX
+            juce::Desktop::getInstance().setKioskModeComponent(getTopLevelComponent());
            #else
             setResizable (true, true);
             centreWithSize (getWidth(), getHeight());
