@@ -62,17 +62,17 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
 
 		m_OptionsPopup->addSeparator();
 
-		// add 'toggle visu only' popup menu entry, incl. prep the corresp. icon
-		std::unique_ptr<juce::Drawable> normalToggleImage = juce::Drawable::createFromSVG(*(juce::XmlDocument::parse(BinaryData::remove_circle24px_svg).get()));
-		normalToggleImage->replaceColour(Colours::black, getLookAndFeel().findColour(juce::TextEditor::textColourId));
-		m_OptionsPopup->addItem(3, "Show levelmeters only", true, IsVisuOnlyModeActive()/*, std::move(normalToggleImage)*/);
+		// add 'toggle visu only' popup menu entry
+		m_OptionsPopup->addItem(3, "Show levelmeters only", true, IsVisuOnlyModeActive());
+		// add 'toggle fullscreen' popup menu entry
+		m_OptionsPopup->addItem(4, "Fullscreen window mode", true, (nullptr != juce::Desktop::getInstance().getKioskModeComponent()));
 
 		m_OptionsPopup->addSeparator();
 
 		// add 'github readme' popup menu entry, incl. prep the corresp. icon
 		std::unique_ptr<juce::Drawable> normalHelpImage = juce::Drawable::createFromSVG(*(juce::XmlDocument::parse(BinaryData::help24px_svg).get()));
 		normalHelpImage->replaceColour(Colours::black, getLookAndFeel().findColour(juce::TextEditor::textColourId));
-		m_OptionsPopup->addItem(4, "Github README", true, false, std::move(normalHelpImage));
+		m_OptionsPopup->addItem(5, "Github README", true, false, std::move(normalHelpImage));
 
 		// show the popup and handle its result in a lambda
 		m_OptionsPopup->showMenuAsync(PopupMenu::Options(), [this](int resultingAssiIdx) {
@@ -91,6 +91,12 @@ NanoAmpControlUI::NanoAmpControlUI(const std::uint16_t ampChannelCount)
 					onToggleVisuOnlyClicked();
 				break;
 			case 4:
+				if (nullptr != juce::Desktop::getInstance().getKioskModeComponent())
+					juce::Desktop::getInstance().setKioskModeComponent(nullptr);
+				else
+					juce::Desktop::getInstance().setKioskModeComponent(getTopLevelComponent());
+				break;
+			case 5:
 				juce::URL("https://github.com/ChristianAhrens/" + juce::JUCEApplication::getInstance()->getApplicationName() + "/blob/main/README.md").launchInDefaultBrowser();
 				break;
 			default:
