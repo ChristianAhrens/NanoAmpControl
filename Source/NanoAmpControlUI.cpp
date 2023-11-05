@@ -354,10 +354,12 @@ void NanoAmpControlUI::resized()
 					.removeFromLeft(static_cast<int>(channelWidth * 0.7f))
 					.reduced(margin / 2));
 
+			auto levelBounds = gainAndLevelsBounds
+				.removeFromLeft(static_cast<int>(channelWidth * 0.3f))
+				.reduced(0, margin / 2);
+			levelBounds.removeFromRight(margin / 2);
 			if (m_AmpChannelLevelMeters.find(ch) != m_AmpChannelLevelMeters.end())
-				m_AmpChannelLevelMeters.at(ch)->setBounds(gainAndLevelsBounds
-					.removeFromLeft(static_cast<int>(channelWidth * 0.3f))
-					.reduced(margin / 2));
+				m_AmpChannelLevelMeters.at(ch)->setBounds(levelBounds);
 		}
 
 		m_RelativeLabel->setBounds(channelLabelBounds.reduced(margin));
