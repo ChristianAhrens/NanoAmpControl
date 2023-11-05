@@ -75,6 +75,7 @@ public:
     std::function<bool(const juce::String&, const std::uint16_t, const AmpType)> onConnectionParametersEdited;
     std::function<void()> onAddClicked;
     std::function<void()> onRemoveClicked;
+    std::function<void()> onToggleVisuOnlyClicked;
 
     //==============================================================================
     bool SetPwrOnOff(const bool on) override;
@@ -86,15 +87,24 @@ public:
     bool SetChannelGain(const std::uint16_t channel, const float gain) override;
     void SetConnectionState(const NanoAmpControlInterface::ConnectionState state) override;
 
+protected:
+    //==========================================================================
+    bool IsVisuOnlyModeActive();
+    void SetVisuOnlyModeActive(bool active);
+    void ToggleVisuOnlyMode();
+
+    //==========================================================================
+    void SetCtrlComponentsVisible(bool visible);
+
 private:
     //==========================================================================
-    std::unique_ptr<juce::PopupMenu>                                    m_optionsPopup;
-    std::unique_ptr<juce::DrawableButton>								m_optionsButton;
+    std::unique_ptr<juce::PopupMenu>                                    m_OptionsPopup;
+    std::unique_ptr<juce::DrawableButton>								m_OptionsButton;
 
-    std::unique_ptr<juce::TextEditor>                                   m_ipAndPortEditor;
-    std::unique_ptr<JUCEAppBasics::ZeroconfDiscoverComponent>           m_zeroconfDiscoverButton;
+    std::unique_ptr<juce::TextEditor>                                   m_IpAndPortEditor;
+    std::unique_ptr<JUCEAppBasics::ZeroconfDiscoverComponent>           m_ZeroconfDiscoverButton;
 
-    std::unique_ptr<LedComponent>                                       m_stateLed;
+    std::unique_ptr<LedComponent>                                       m_StateLed;
 
     std::unique_ptr<juce::TextButton>                                   m_AmpPowerOnButton;
 
@@ -108,7 +118,8 @@ private:
     std::unique_ptr<Label>                                              m_RelativeLabel;
 
     //==========================================================================
-    double  m_lastKnownRelativeGainSliderValue{ 0.0 };
+    double  m_LastKnownRelativeGainSliderValue{ 0.0 };
+    bool    m_VisuOnlyModeActive{ false };
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NanoAmpControlUI)
