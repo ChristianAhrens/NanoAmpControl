@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+## [0.2.0] - 2023-11-05
+### Added
+- Added support for multiple 4-ch amp instances
+- Added options popup menu for extended user configuration/control options
+
+### Changed
+- Changed ISP, GR, OVL visualization to be part of levelmeters
+
+### Fixed
+
 ## [0.1.3] - 2023-07-16
 ### Added
 - Proper support for Dx, Dy and 5D amps
