@@ -1,6 +1,6 @@
 /* Copyright (c) 2023, Christian Ahrens
  *
- * This file is part of SurroundFieldMixer <https://github.com/ChristianAhrens/NanoAmpControl>
+ * This file is part of NanoAmpControl <https://github.com/ChristianAhrens/NanoAmpControl>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 3.0 as published
@@ -97,7 +97,7 @@ private:
 class NanoAmpControl
 {
 public:
-    NanoAmpControl();
+    NanoAmpControl(int id);
     ~NanoAmpControl();
     
     //==========================================================================
@@ -106,10 +106,15 @@ public:
     //==========================================================================
     static constexpr std::uint16_t s_channelCount{ 4 };
 
+    //==============================================================================
+    std::function<void()>       onAddAmpControlTriggered;
+    std::function<void(int)>    onRemoveAmpControlTriggered;
+
 private:
     //==========================================================================
 
     //==========================================================================
+    int m_id;
     std::unique_ptr<NanoAmpControlProcessor>    m_NanoAmpControlProcessor;
     std::unique_ptr<NanoAmpControlUI>           m_NanoAmpControlUI;
 

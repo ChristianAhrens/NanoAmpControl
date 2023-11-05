@@ -1,6 +1,6 @@
 /* Copyright (c) 2023, Christian Ahrens
  *
- * This file is part of SurroundFieldMixer <https://github.com/ChristianAhrens/NanoAmpControl>
+ * This file is part of NanoAmpControl <https://github.com/ChristianAhrens/NanoAmpControl>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 3.0 as published
@@ -33,18 +33,14 @@ public:
     bool moreThanOneInstanceAllowed() override       { return true; }
 
     //==============================================================================
-    void initialise (const String& commandLine) override
+    void initialise(const String& commandLine) override
     {
-        ignoreUnused(commandLine);
-
-        mainWindow.reset (new MainWindow (getApplicationName()));
+        mainWindow.reset(new MainWindow(getApplicationName(), commandLine));
     }
 
     void shutdown() override
     {
-        // Add your application's shutdown code here..
-
-        mainWindow = nullptr; // (deletes our window)
+        mainWindow.reset();
     }
 
     //==============================================================================
@@ -62,25 +58,94 @@ public:
 
     //==============================================================================
     /*
+        This struct implements minimal commandline string parsing
+    */
+    struct CommandLineParser
+    {
+        CommandLineParser(){}
+        CommandLineParser(const String& commandLine) {
+            if (!ReadCommandLine(commandLine))
+                juce::JUCEApplication::quit();
+        }
+
+        bool ReadCommandLine(const String& commandLine){
+            // no commandline input is totally valid
+            if (commandLine.isEmpty())
+                return true;
+
+            // if help was requested, user should be informed, but startup should be aborted
+            if (commandLine.containsWholeWord("-h") || commandLine.containsWholeWord("--help"))
+            {
+                PrintHelp();
+                return false;
+            }
+
+            // parse the rest for -i and -s parameter values
+            juce::StringArray paramStringArray;
+            paramStringArray.addTokens(commandLine, " ", "'");
+            for (auto iter = paramStringArray.begin(); iter != paramStringArray.end(); iter++)
+            {
+                if (iter->containsWholeWord("-i") || iter->containsWholeWord("--instances"))
+                {
+                    auto dataIter = (iter + 1);
+                    if (dataIter)
+                        _ampCount = dataIter->getIntValue();
+                }
+
+                if (iter->containsWholeWord("-s") || iter->containsWholeWord("--size"))
+                {
+                    auto dataIter = (iter + 1);
+                    if (dataIter)
+                    {
+                        juce::StringArray sizeValStringArray;
+                        sizeValStringArray.addTokens(*dataIter, ",", "'");
+                        jassert(sizeValStringArray.size() == 2);
+                        if (2 == sizeValStringArray.size())
+                            _initSize = juce::Rectangle<int>(sizeValStringArray[0].getIntValue(), sizeValStringArray[1].getIntValue());
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        void PrintHelp() {
+            std::cout << juce::JUCEApplication::getInstance()->getApplicationName().toStdString() << " commandline options:" << std::endl
+                << std::endl
+                << "-h | --help         Print this help." << std::endl
+                << "-i | --instances    Specify integer value for how many NanoAmpControl instances should be created." << std::endl
+                << "-s | --size         Specify two comma separated integer values as initial width and height per NanoAmpControl Instance" << std::endl;
+        }
+
+        int                     _ampCount = { 1 };
+        juce::Rectangle<int>    _initSize = { 300, 533 };
+    };
+
+    //==============================================================================
+    /*
         This class implements the desktop window that contains an instance of
         our MainComponent class.
     */
     class MainWindow    : public DocumentWindow
     {
     public:
-        MainWindow (String name)  : DocumentWindow (name,
+        MainWindow (const String& name, const String& commandLine)  : DocumentWindow (name,
                                                     Desktop::getInstance().getDefaultLookAndFeel()
                                                                           .findColour (ResizableWindow::backgroundColourId),
                                                     DocumentWindow::allButtons)
         {
-            m_customLookAndFeel = std::unique_ptr<LookAndFeel>(new NanoAmpControl::DarkLookAndFeel);
-            Desktop::getInstance().setDefaultLookAndFeel(m_customLookAndFeel.get());
+            CommandLineParser cmdP(commandLine);
 
+            m_customLookAndFeel = std::unique_ptr<LookAndFeel>(new NanoAmpControl::DarkLookAndFeel);
+            juce::Desktop::getInstance().setDefaultLookAndFeel(m_customLookAndFeel.get());
+            
             setUsingNativeTitleBar (true);
-            setContentOwned (new MainComponent(), true);
+            setContentOwned (new MainComponent(cmdP._ampCount, cmdP._initSize), true);
 
            #if JUCE_IOS || JUCE_ANDROID
             setFullScreen (true);
+           #elif JUCE_LINUX
+            juce::Desktop::getInstance().setKioskModeComponent(getTopLevelComponent());
            #else
             setResizable (true, true);
             centreWithSize (getWidth(), getHeight());

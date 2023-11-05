@@ -1,6 +1,6 @@
 /* Copyright (c) 2023, Christian Ahrens
  *
- * This file is part of SurroundFieldMixer <https://github.com/ChristianAhrens/NanoAmpControl>
+ * This file is part of NanoAmpControl <https://github.com/ChristianAhrens/NanoAmpControl>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 3.0 as published
@@ -32,6 +32,26 @@ LevelMeter::~LevelMeter()
 {
 }
 
+const juce::Colour LevelMeter::GetColourForState(const State stateValue)
+{
+    switch (stateValue)
+    {
+    case White:
+        return juce::Colour(0xff, 0xff, 0xff);//juce::Colours::white;
+    case Grey:
+        return juce::Colour(0x7d, 0x7d, 0x7d);//juce::Colours::grey;
+    case Red:
+        return juce::Colour(0xf3, 0x00, 0x14);//juce::Colours::red;
+    case Yellow:
+        return juce::Colour(0xfe, 0xff, 0x00);//juce::Colours::yellowgreen;
+    case Green:
+        return juce::Colour(0x54, 0xad, 0x20);//juce::Colours::forestgreen;
+    case Off:
+    default:
+        return juce::Colour(0x43, 0x43, 0x43);//juce::Colours::darkgrey;
+    }
+}
+
 void LevelMeter::SetLevelValue(const float level)
 {
     m_currentLevelValue = level;
@@ -56,7 +76,11 @@ void LevelMeter::SetLevelRange(const juce::Range<float>& range)
 void LevelMeter::paint(juce::Graphics& g)
 {
     auto bounds = getLocalBounds();
+    paintLevelMeter(g, bounds);
+}
 
+void LevelMeter::paintLevelMeter(juce::Graphics& g, juce::Rectangle<int>& bounds)
+{
     g.setColour(getLookAndFeel().findColour(juce::TextEditor::outlineColourId));
     g.drawRect(bounds);
 
@@ -68,7 +92,7 @@ void LevelMeter::paint(juce::Graphics& g)
 
     auto level0to1 = m_levelRange.convertTo0to1(m_currentLevelValue);
     auto levelRect = levelRectBounds.removeFromBottom(static_cast<int>(levelRectHeight * level0to1));
-    auto levelGreenColour = juce::Colour(0x54, 0xad, 0x20);
+    auto levelGreenColour = GetColourForState(State::Green);
     g.setColour(levelGreenColour);
     g.fillRect(levelRect);
 
@@ -77,6 +101,168 @@ void LevelMeter::paint(juce::Graphics& g)
     g.setColour(getLookAndFeel().findColour(juce::TextEditor::textColourId));
     g.fillRect(levelPeakRect.removeFromTop(1));
 
+}
+
+
+LevelMeterWithISP::LevelMeterWithISP()
+    : LevelMeter()
+{
+}
+
+LevelMeterWithISP::~LevelMeterWithISP()
+{
+}
+
+void LevelMeterWithISP::SetISPState(const bool ispState)
+{
+    m_currentISPState = ispState;
+
+    repaint();
+}
+
+void LevelMeterWithISP::paint(juce::Graphics& g)
+{
+    auto bounds = getLocalBounds();
+    paintLevelMeterWithISP(g, bounds);
+}
+
+void LevelMeterWithISP::paintLevelMeterWithISP(juce::Graphics& g, juce::Rectangle<int>& bounds)
+{
+    auto goodHeight = juce::Font().getHeight() + 2;
+
+    auto ispBounds = bounds;
+    ispBounds = ispBounds.removeFromBottom(goodHeight);
+    paintISP(g, ispBounds);
+
+    bounds.removeFromBottom(goodHeight - 1);
+    paintLevelMeter(g, bounds);
+}
+
+void LevelMeterWithISP::paintISP(juce::Graphics& g, juce::Rectangle<int>& bounds)
+{
+    auto ispBounds = bounds;
+
+    g.setColour(getLookAndFeel().findColour(juce::TextEditor::outlineColourId));
+    g.drawRect(ispBounds);
+
+    auto ispFillBounds = ispBounds.reduced(1);
+    if (m_currentISPState)
+    {
+        auto ispGreenColour = GetColourForState(State::Green);
+        g.setColour(ispGreenColour);
+    }
+    else
+    {
+        g.setColour(getLookAndFeel().findColour(juce::TextEditor::backgroundColourId));
+    }
+    g.fillRect(ispFillBounds);
+
+    g.setColour(getLookAndFeel().findColour(juce::TextEditor::outlineColourId));
+    auto font = g.getCurrentFont();
+    font.setHeight(0.5f * ispBounds.getHeight());
+    g.setFont(font);
+    g.drawText("ISP", ispBounds, juce::Justification::centred);
+}
+
+
+LevelMeterWithISPGROVL::LevelMeterWithISPGROVL()
+    : LevelMeterWithISP()
+{
+}
+
+LevelMeterWithISPGROVL::~LevelMeterWithISPGROVL()
+{
+}
+
+void LevelMeterWithISPGROVL::SetGRState(const bool grState)
+{
+    m_currentGRState = grState;
+
+    repaint();
+}
+
+void LevelMeterWithISPGROVL::SetOVLState(const bool ovlState)
+{
+    m_currentOVLState = ovlState;
+
+    repaint();
+}
+
+void LevelMeterWithISPGROVL::paint(juce::Graphics& g)
+{
+    auto bounds = getLocalBounds();
+    paintLevelMeterWithISPGROVL(g, bounds);
+}
+
+void LevelMeterWithISPGROVL::paintLevelMeterWithISPGROVL(juce::Graphics& g, juce::Rectangle<int>& bounds)
+{
+    auto goodHeight = juce::Font().getHeight() + 2;
+
+    auto ovlBounds = bounds;
+    ovlBounds = ovlBounds.removeFromTop(goodHeight - 1);
+    paintOVL(g, ovlBounds);
+
+    auto grBounds = bounds;
+    grBounds.removeFromTop(ovlBounds.getHeight() - 1);
+    grBounds = grBounds.removeFromTop(goodHeight - 1);
+    paintGR(g, grBounds);
+    
+    auto levelMeterWithISPBounds = bounds;
+    levelMeterWithISPBounds.removeFromTop(ovlBounds.getHeight() - 1);
+    levelMeterWithISPBounds.removeFromTop(grBounds.getHeight() - 1);
+    paintLevelMeterWithISP(g, levelMeterWithISPBounds);
+}
+
+void LevelMeterWithISPGROVL::paintGR(juce::Graphics& g, juce::Rectangle<int>& bounds)
+{
+    auto grBounds = bounds;
+
+    g.setColour(getLookAndFeel().findColour(juce::TextEditor::outlineColourId));
+    g.drawRect(grBounds);
+
+    auto grFillBounds = grBounds.reduced(1);
+    if (m_currentGRState)
+    {
+        auto grYellowColour = GetColourForState(State::Yellow);
+        g.setColour(grYellowColour);
+    }
+    else
+    {
+        g.setColour(getLookAndFeel().findColour(juce::TextEditor::backgroundColourId));
+    }
+    g.fillRect(grFillBounds);
+
+    g.setColour(getLookAndFeel().findColour(juce::TextEditor::outlineColourId));
+    auto font = g.getCurrentFont();
+    font.setHeight(0.5f * grBounds.getHeight());
+    g.setFont(font);
+    g.drawText("GR", grBounds, juce::Justification::centred);
+}
+
+void LevelMeterWithISPGROVL::paintOVL(juce::Graphics& g, juce::Rectangle<int>& bounds)
+{
+    auto ovlBounds = bounds;
+
+    g.setColour(getLookAndFeel().findColour(juce::TextEditor::outlineColourId));
+    g.drawRect(ovlBounds);
+
+    auto ovlFillBounds = ovlBounds.reduced(1);
+    if (m_currentOVLState)
+    {
+        auto ovlRedColour = GetColourForState(State::Red);
+        g.setColour(ovlRedColour);
+    }
+    else
+    {
+        g.setColour(getLookAndFeel().findColour(juce::TextEditor::backgroundColourId));
+    }
+    g.fillRect(ovlFillBounds);
+
+    g.setColour(getLookAndFeel().findColour(juce::TextEditor::outlineColourId));
+    auto font = g.getCurrentFont();
+    font.setHeight(0.5f * ovlBounds.getHeight());
+    g.setFont(font);
+    g.drawText("OVL", ovlBounds, juce::Justification::centred);
 }
 
 

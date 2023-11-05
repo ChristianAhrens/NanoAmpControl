@@ -1,6 +1,6 @@
 /* Copyright (c) 2023, Christian Ahrens
  *
- * This file is part of SurroundFieldMixer <https://github.com/ChristianAhrens/NanoAmpControl>
+ * This file is part of NanoAmpControl <https://github.com/ChristianAhrens/NanoAmpControl>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 3.0 as published
@@ -19,20 +19,75 @@
 #include "MainComponent.h"
 
 #include "NanoAmpControl.h"
+#include "ComponentContainer.h"
 
 #include <iOS_utils.h>
 
-MainComponent::MainComponent()
+MainComponent::MainComponent(int ampCount, const juce::Rectangle<int> initSize)
     : juce::Component()
 {
-    m_ampControl = std::make_unique<NanoAmpControl::NanoAmpControl>();
-    addAndMakeVisible(m_ampControl->getUIComponent());
+    m_componentsContainer = std::make_unique<NanoAmpControl::ComponentContainer>(
+        NanoAmpControl::ComponentContainer::Direction::Horizontal,
+        initSize);
 
-    setSize(300, 533);
+    m_viewPort = std::make_unique<juce::Viewport>();
+    m_viewPort->setViewedComponent(m_componentsContainer.get());
+    addAndMakeVisible(m_viewPort.get());
+
+    for (int i = 0; i < ampCount; i++)
+        AddAmpControlInstance();
+
+    setSize(initSize.getWidth(), initSize.getHeight());
 }
 
 MainComponent::~MainComponent()
 {
+    auto activeIds = std::vector<int>();
+    for (auto const& ampControlInstanceKV : m_ampControls)
+        activeIds.push_back(ampControlInstanceKV.first);
+    for (auto const& activeId : activeIds)
+        RemoveAmpControlInstance(activeId);
+
+    m_componentsContainer->removeAllChildren();
+    m_componentsContainer.reset();
+
+    m_viewPort->removeAllChildren();
+    m_viewPort.reset();
+}
+
+int MainComponent::AddAmpControlInstance()
+{
+    jassert(m_componentsContainer);
+    if (!m_componentsContainer)
+        return -1;
+
+    auto newId = m_ampControlsIdCount++;
+
+    m_ampControls[newId] = std::make_unique<NanoAmpControl::NanoAmpControl>(newId);
+    m_ampControls[newId]->onAddAmpControlTriggered = [=]() {
+        AddAmpControlInstance();
+    };
+    m_ampControls[newId]->onRemoveAmpControlTriggered = [=](int id) {
+        RemoveAmpControlInstance(id);
+    };
+    m_componentsContainer->AddComponent(m_ampControls.at(newId)->getUIComponent());
+
+    return newId;
+}
+
+void MainComponent::RemoveAmpControlInstance(int id)
+{
+    jassert(m_componentsContainer);
+    if (!m_componentsContainer)
+        return;
+
+    if (1 == m_ampControls.count(id) && m_ampControls.at(id)->getUIComponent())
+    {
+        m_componentsContainer->RemoveComponent(m_ampControls.at(id)->getUIComponent());
+        m_ampControls.erase(id);
+    }
+    else
+        jassertfalse;
 }
 
 void MainComponent::paint(juce::Graphics& g)
@@ -50,8 +105,11 @@ void MainComponent::resized()
     safeBounds.removeFromLeft(safety._left);
     safeBounds.removeFromRight(safety._right);
 
-    auto ampControlComponent = m_ampControl->getUIComponent();
-    if (ampControlComponent)
-        ampControlComponent->setBounds(safeBounds);
+    m_viewPort->setBounds(safeBounds);
+
+    if (m_componentsContainer->IsLayoutingHorizontally())
+        m_componentsContainer->SetFixHeight(safeBounds.getHeight());
+    else
+        m_componentsContainer->SetFixWidth(safeBounds.getWidth());
 }
 

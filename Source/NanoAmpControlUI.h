@@ -1,6 +1,6 @@
 /* Copyright (c) 2022, Christian Ahrens
  *
- * This file is part of SurroundFieldMixer <https://github.com/ChristianAhrens/SurroundFieldMixer>
+ * This file is part of NanoAmpControl <https://github.com/ChristianAhrens/NanoAmpControl>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 3.0 as published
@@ -39,7 +39,7 @@ namespace NanoAmpControl
  * Fwd. Decls
  */
 class LedComponent;
-class LevelMeter;
+class LevelMeterWithISPGROVL;
 
 //==============================================================================
 /*
@@ -56,23 +56,26 @@ public:
     ~NanoAmpControlUI();
 
     //==============================================================================
-    void paint(Graphics&) override;
+    void paint(juce::Graphics&) override;
     void resized() override;
 
     //==========================================================================
     void lookAndFeelChanged() override;
 
     //==============================================================================
-    void buttonClicked(Button* button) override;
+    void buttonClicked(juce::Button* button) override;
 
     //==============================================================================
-    void sliderValueChanged(Slider* slider) override;
+    void sliderValueChanged(juce::Slider* slider) override;
 
     //==============================================================================
-    void textEditorReturnKeyPressed(TextEditor& editor) override;
+    void textEditorReturnKeyPressed(juce::TextEditor& editor) override;
 
     //==============================================================================
     std::function<bool(const juce::String&, const std::uint16_t, const AmpType)> onConnectionParametersEdited;
+    std::function<void()> onAddClicked;
+    std::function<void()> onRemoveClicked;
+    std::function<void()> onToggleVisuOnlyClicked;
 
     //==============================================================================
     bool SetPwrOnOff(const bool on) override;
@@ -84,31 +87,39 @@ public:
     bool SetChannelGain(const std::uint16_t channel, const float gain) override;
     void SetConnectionState(const NanoAmpControlInterface::ConnectionState state) override;
 
+protected:
+    //==========================================================================
+    bool IsVisuOnlyModeActive();
+    void SetVisuOnlyModeActive(bool active);
+    void ToggleVisuOnlyMode();
+
+    //==========================================================================
+    void SetCtrlComponentsVisible(bool visible);
+
 private:
     //==========================================================================
-    std::unique_ptr<DrawableButton>								m_helpButton;
+    std::unique_ptr<juce::PopupMenu>                                    m_OptionsPopup;
+    std::unique_ptr<juce::DrawableButton>								m_OptionsButton;
 
-    std::unique_ptr<TextEditor>                                 m_ipAndPortEditor;
-    std::unique_ptr<JUCEAppBasics::ZeroconfDiscoverComponent>   m_zeroconfDiscoverButton;
+    std::unique_ptr<juce::TextEditor>                                   m_IpAndPortEditor;
+    std::unique_ptr<JUCEAppBasics::ZeroconfDiscoverComponent>           m_ZeroconfDiscoverButton;
 
-    std::unique_ptr<LedComponent>                               m_stateLed;
+    std::unique_ptr<LedComponent>                                       m_StateLed;
 
-    std::unique_ptr<TextButton>                                 m_AmpPowerOnButton;
+    std::unique_ptr<juce::TextButton>                                   m_AmpPowerOnButton;
 
-    std::map<std::uint16_t, std::unique_ptr<Slider>>            m_AmpChannelGainSliders;
-    std::map<std::uint16_t, std::unique_ptr<TextButton>>        m_AmpChannelMuteButtons;
-    std::map<std::uint16_t, std::unique_ptr<Label>>             m_AmpChannelLabels;
-    std::map<std::uint16_t, std::unique_ptr<LevelMeter>>        m_AmpChannelLevelMeters;
-    std::map<std::uint16_t, std::unique_ptr<LedComponent>>      m_AmpChannelIspLeds;
-    std::map<std::uint16_t, std::unique_ptr<LedComponent>>      m_AmpChannelGrLeds;
-    std::map<std::uint16_t, std::unique_ptr<LedComponent>>      m_AmpChannelOvlLeds;
+    std::map<std::uint16_t, std::unique_ptr<juce::Slider>>              m_AmpChannelGainSliders;
+    std::map<std::uint16_t, std::unique_ptr<juce::TextButton>>          m_AmpChannelMuteButtons;
+    std::map<std::uint16_t, std::unique_ptr<juce::Label>>               m_AmpChannelLabels;
+    std::map<std::uint16_t, std::unique_ptr<LevelMeterWithISPGROVL>>    m_AmpChannelLevelMeters;
 
-    std::unique_ptr<Slider>                                     m_RelativeGainSlider;
-    std::unique_ptr<TextButton>                                 m_RelativeMuteButton;
-    std::unique_ptr<Label>                                      m_RelativeLabel;
+    std::unique_ptr<Slider>                                             m_RelativeGainSlider;
+    std::unique_ptr<TextButton>                                         m_RelativeMuteButton;
+    std::unique_ptr<Label>                                              m_RelativeLabel;
 
     //==========================================================================
-    double  m_lastKnownRelativeGainSliderValue{ 0.0 };
+    double  m_LastKnownRelativeGainSliderValue{ 0.0 };
+    bool    m_VisuOnlyModeActive{ false };
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NanoAmpControlUI)

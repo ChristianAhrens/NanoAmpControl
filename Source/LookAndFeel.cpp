@@ -36,7 +36,7 @@ void LookAndFeelBase::InitColours()
 	setColour(TextEditor::backgroundColourId, GetColorIdent(ColorIdent::DarkColor));
 	setColour(TextEditor::textColourId, GetColorIdent(ColorIdent::TextColor));
 	setColour(TextEditor::highlightColourId, GetColorIdent(ColorIdent::HighlightColor));
-	setColour(TextEditor::highlightedTextColourId, GetColorIdent(ColorIdent::TextColor));
+	setColour(TextEditor::highlightedTextColourId, GetColorIdent(ColorIdent::DarkTextColor));
 	setColour(TextEditor::outlineColourId, GetColorIdent(ColorIdent::WindowColor));
 	setColour(TextEditor::focusedOutlineColourId, GetColorIdent(ColorIdent::LightColor));
 	setColour(TextEditor::shadowColourId, GetColorIdent(ColorIdent::MidColor).darker());
@@ -52,7 +52,7 @@ void LookAndFeelBase::InitColours()
 	setColour(PopupMenu::textColourId, GetColorIdent(ColorIdent::TextColor));
 	setColour(PopupMenu::headerTextColourId, GetColorIdent(ColorIdent::TextColor));
 	setColour(PopupMenu::highlightedBackgroundColourId, GetColorIdent(ColorIdent::HighlightColor));
-	setColour(PopupMenu::highlightedTextColourId, GetColorIdent(ColorIdent::TextColor));
+	setColour(PopupMenu::highlightedTextColourId, GetColorIdent(ColorIdent::DarkTextColor));
 
 	setColour(TextButton::buttonColourId, GetColorIdent(ColorIdent::ButtonColor)); // this applies for DrawableButton as well
 	setColour(TextButton::buttonOnColourId, GetColorIdent(ColorIdent::HighlightColor)); // this applies for DrawableButton as well

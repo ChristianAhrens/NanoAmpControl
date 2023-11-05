@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="InQ33m" name="NanoAmpControl" projectType="guiapp" bundleIdentifier="com.ChristianAhrens.NanoAmpControl"
-              version="0.1.4" companyName="Christian Ahrens" companyCopyright="2023"
+              version="0.2.0" companyName="Christian Ahrens" companyCopyright="2023"
               companyEmail="christianahrens@me.com" jucerFormatVersion="1"
               companyWebsite="https://github.com/ChristianAhrens/NanoAmpControl"
               headerPath="../../submodules/JUCE-AppBasics/Source/&#10;../../submodules/NanoOcp/Source/">
@@ -24,9 +24,15 @@
         </GROUP>
         <GROUP id="{3B5186B0-4250-6DC5-EAB7-7BB93E12C508}" name="Resources">
           <GROUP id="{BE5AB823-4A06-C5E2-7B24-0C82CE2F075C}" name="Images">
+            <FILE id="j0AF4t" name="add_circle-24px.svg" compile="0" resource="1"
+                  file="submodules/JUCE-AppBasics/Resources/Images/add_circle-24px.svg"/>
             <FILE id="Zsb3bN" name="find_replace-24px.svg" compile="0" resource="1"
                   file="submodules/JUCE-AppBasics/Resources/Images/find_replace-24px.svg"/>
             <FILE id="VJtNam" name="help-24px.svg" compile="0" resource="1" file="submodules/JUCE-AppBasics/Resources/Images/help-24px.svg"/>
+            <FILE id="t6q7y8" name="remove_circle-24px.svg" compile="0" resource="1"
+                  file="submodules/JUCE-AppBasics/Resources/Images/remove_circle-24px.svg"/>
+            <FILE id="qNzuZl" name="settings-24px.svg" compile="0" resource="1"
+                  file="submodules/JUCE-AppBasics/Resources/Images/settings-24px.svg"/>
           </GROUP>
         </GROUP>
         <GROUP id="{2D73F130-0C5C-3687-3AD5-102D2E52CB78}" name="Source">
@@ -72,6 +78,10 @@
       </GROUP>
     </GROUP>
     <GROUP id="{0480E33C-041F-2346-F9AA-44BBEAD80CFE}" name="Source">
+      <FILE id="I6P5Z1" name="ComponentContainer.cpp" compile="1" resource="0"
+            file="Source/ComponentContainer.cpp"/>
+      <FILE id="VdEw4X" name="ComponentContainer.h" compile="0" resource="0"
+            file="Source/ComponentContainer.h"/>
       <FILE id="JDeCjr" name="LevelMeter.cpp" compile="1" resource="0" file="Source/LevelMeter.cpp"/>
       <FILE id="oFKbhB" name="LevelMeter.h" compile="0" resource="0" file="Source/LevelMeter.h"/>
       <FILE id="nd4oaC" name="LedComponent.cpp" compile="1" resource="0"
@@ -101,7 +111,8 @@
     <XCODE_MAC targetFolder="Builds/MacOSX" smallIcon="vsLK2o" bigIcon="vsLK2o"
                appSandbox="1" appSandboxOptions="com.apple.security.device.microphone,com.apple.security.files.user-selected.read-write,com.apple.security.network.client,com.apple.security.network.server"
                hardenedRuntime="1" hardenedRuntimeOptions="com.apple.security.device.audio-input"
-               microphonePermissionNeeded="1" applicationCategory="public.app-category.utilities">
+               microphonePermissionNeeded="1" applicationCategory="public.app-category.utilities"
+               extraLinkerFlags="-Wl,-ld_classic" extraDefs="JUCE_SILENCE_XCODE_15_LINKER_WARNING">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug"/>
         <CONFIGURATION isDebug="0" name="Release"/>
@@ -130,7 +141,7 @@
                   UIStatusBarHidden="1" UIRequiresFullScreen="0" UISupportsDocumentBrowser="1"
                   UIFileSharingEnabled="1" iosScreenOrientation="UIInterfaceOrientationLandscapeLeft,UIInterfaceOrientationLandscapeRight,UIInterfaceOrientationPortrait,UIInterfaceOrientationPortraitUpsideDown"
                   iPadScreenOrientation="UIInterfaceOrientationLandscapeLeft,UIInterfaceOrientationLandscapeRight,UIInterfaceOrientationPortrait,UIInterfaceOrientationPortraitUpsideDown"
-                  iCloudPermissions="1">
+                  iCloudPermissions="1" extraLinkerFlags="-Wl,-ld_classic" extraDefs="JUCE_SILENCE_XCODE_15_LINKER_WARNING">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug"/>
         <CONFIGURATION isDebug="0" name="Release"/>

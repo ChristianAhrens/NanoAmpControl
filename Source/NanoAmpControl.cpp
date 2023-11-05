@@ -25,7 +25,8 @@ namespace NanoAmpControl
 {
 
 //==============================================================================
-NanoAmpControl::NanoAmpControl()
+NanoAmpControl::NanoAmpControl(int id)
+    : m_id(id)
 {
     // create processor and ui objects
     m_NanoAmpControlProcessor = std::make_unique<NanoAmpControlProcessor>(s_channelCount);
@@ -84,6 +85,14 @@ NanoAmpControl::NanoAmpControl()
             return m_NanoAmpControlProcessor->UpdateConnectionParameters(address, port, ampType);
         else
             return false;
+    };
+    m_NanoAmpControlUI->onAddClicked = [=]() {
+        if (onAddAmpControlTriggered)
+            onAddAmpControlTriggered();
+    };
+    m_NanoAmpControlUI->onRemoveClicked = [=]() {
+        if (onRemoveAmpControlTriggered)
+            onRemoveAmpControlTriggered(m_id);
     };
 }
 
