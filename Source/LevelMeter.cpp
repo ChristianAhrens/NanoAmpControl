@@ -128,11 +128,13 @@ void LevelMeterWithISP::paint(juce::Graphics& g)
 
 void LevelMeterWithISP::paintLevelMeterWithISP(juce::Graphics& g, juce::Rectangle<int>& bounds)
 {
+    auto goodHeight = juce::Font().getHeight() + 2;
+
     auto ispBounds = bounds;
-    ispBounds = ispBounds.removeFromBottom(getWidth());
+    ispBounds = ispBounds.removeFromBottom(goodHeight);
     paintISP(g, ispBounds);
 
-    bounds.removeFromBottom(getWidth() - 1);
+    bounds.removeFromBottom(goodHeight - 1);
     paintLevelMeter(g, bounds);
 }
 
@@ -194,13 +196,15 @@ void LevelMeterWithISPGROVL::paint(juce::Graphics& g)
 
 void LevelMeterWithISPGROVL::paintLevelMeterWithISPGROVL(juce::Graphics& g, juce::Rectangle<int>& bounds)
 {
+    auto goodHeight = juce::Font().getHeight() + 2;
+
     auto ovlBounds = bounds;
-    ovlBounds = ovlBounds.removeFromTop(getWidth() - 1);
+    ovlBounds = ovlBounds.removeFromTop(goodHeight - 1);
     paintOVL(g, ovlBounds);
 
     auto grBounds = bounds;
     grBounds.removeFromTop(ovlBounds.getHeight() - 1);
-    grBounds = grBounds.removeFromTop(getWidth() - 1);
+    grBounds = grBounds.removeFromTop(goodHeight - 1);
     paintGR(g, grBounds);
     
     auto levelMeterWithISPBounds = bounds;
