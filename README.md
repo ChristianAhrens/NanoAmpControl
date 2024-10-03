@@ -1,6 +1,6 @@
 ![Showreel.001.png](Resources/Documentation/Showreel/Showreel.001.png "NanoAmpControl Headline Icons")
 
-NanoAmpControl is a **PRIVATELY** created and driven project and is a programming experiment to try out ideas on a desktop/mobile app to control 4-ch amplifiers via AES70/OCP.1 using JUCE framework.
+NanoAmpControl is a **PRIVATELY** created and driven project and is a programming experiment to try out ideas on a desktop/mobile app to control d&b 4-ch amplifiers via AES70/OCP.1 using JUCE framework.
 
 Usecases may be controlling a single amp from a smartphone app, multiple amplifiers from a tablet app or even many amps in 'levelmeter only' mode on a embedded ultra widescreen.
 
