@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+## [0.2.1] - 2024-10-03
+### Added
+
+### Changed
+- Maintenance update to integrated fixes in submodules
+
+### Fixed
+
 ## [0.2.0] - 2023-11-05
 ### Added
 - Added support for multiple 4-ch amp instances
