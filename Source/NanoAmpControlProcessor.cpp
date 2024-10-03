@@ -33,7 +33,7 @@ NanoAmpControlProcessor::NanoAmpControlProcessor(const std::uint16_t ampChannelC
 	auto address = juce::String("127.0.0.1");
 	auto port = 50014;
 
-	m_nanoOcp1Client = std::make_unique<NanoOcp1::NanoOcp1Client>(address, port);
+	m_nanoOcp1Client = std::make_unique<NanoOcp1::NanoOcp1Client>(address, port, false);
 	m_nanoOcp1Client->onDataReceived = [=](const juce::MemoryBlock& data) {
         return ProcessReceivedOcp1Message(data);
 	};

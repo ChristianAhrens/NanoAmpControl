@@ -58,10 +58,15 @@
                 file="submodules/NanoOcp/Source/Ocp1ConnectionServer.cpp"/>
           <FILE id="akg0SU" name="Ocp1ConnectionServer.h" compile="0" resource="0"
                 file="submodules/NanoOcp/Source/Ocp1ConnectionServer.h"/>
+          <FILE id="qmHwXT" name="Ocp1DataTypes.cpp" compile="1" resource="0"
+                file="submodules/NanoOcp/Source/Ocp1DataTypes.cpp"/>
+          <FILE id="YVGiqn" name="Ocp1DataTypes.h" compile="0" resource="0" file="submodules/NanoOcp/Source/Ocp1DataTypes.h"/>
           <FILE id="lLZ1yR" name="Ocp1Message.cpp" compile="1" resource="0" file="submodules/NanoOcp/Source/Ocp1Message.cpp"/>
           <FILE id="YWSWEn" name="Ocp1Message.h" compile="0" resource="0" file="submodules/NanoOcp/Source/Ocp1Message.h"/>
           <FILE id="f8s27C" name="Ocp1ObjectDefinitions.h" compile="0" resource="0"
                 file="submodules/NanoOcp/Source/Ocp1ObjectDefinitions.h"/>
+          <FILE id="vnfzib" name="Variant.cpp" compile="1" resource="0" file="submodules/NanoOcp/Source/Variant.cpp"/>
+          <FILE id="wA0P3V" name="Variant.h" compile="0" resource="0" file="submodules/NanoOcp/Source/Variant.h"/>
         </GROUP>
       </GROUP>
     </GROUP>
