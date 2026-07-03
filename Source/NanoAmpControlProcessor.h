@@ -1,4 +1,4 @@
-/* Copyright (c) 2023, Christian Ahrens
+/* Copyright (c) 2023-2026, Christian Ahrens
  *
  * This file is part of NanoAmpControl <https://github.com/ChristianAhrens/NanoAmpControl>
  *
@@ -22,17 +22,8 @@
 
 #include "NanoAmpControl.h"
 
+#include <AmpController.h>
 
-/**
- * Fwd. Decls
- */
-namespace NanoOcp1
-{
-class NanoOcp1;
-class NanoOcp1Client;
-class Ocp1Notification;
-class Ocp1Response;
-}
 
 namespace NanoAmpControl
 {
@@ -40,64 +31,61 @@ namespace NanoAmpControl
 
 //==============================================================================
 /**
+ * @brief Protocol bridge between the JUCE NanoAmpControl UI layer and
+ *        NanoOcp1::AmpController.
  *
+ * Derives from NanoAmpControlInterface (app-level JUCE callback API) and
+ * holds an AmpController (JUCE-free OCP.1 transport).  The constructor
+ * wires the AmpController's typed callbacks to the NanoAmpControlInterface
+ * callbacks so that the UI layer is unaffected by the protocol implementation.
+ *
+ * Connection lifecycle is fully managed by AmpController: auto-subscribe,
+ * auto-query-values, and auto-reconnect on connection loss.
+ *
+ * ## Threading
+ * AmpController callbacks fire on the NanoOcp1 socket thread.  The JUCE UI
+ * layer receives them via the juce::MessageManager if posting from a non-
+ * message thread is required; see NanoAmpControlUI for that bridging.
  */
 class NanoAmpControlProcessor : public NanoAmpControlInterface
 {
 public:
     //==============================================================================
-    NanoAmpControlProcessor(const std::uint16_t ampChannelCount);
-    ~NanoAmpControlProcessor();
+    explicit NanoAmpControlProcessor(std::uint16_t ampChannelCount);
+    ~NanoAmpControlProcessor() override;
 
     //==============================================================================
-    bool UpdateConnectionParameters(const juce::String& address, const std::uint16_t port, const AmpType ampType);
+    /**
+     * Reconfigure the target device and reconnect.
+     * Disconnects the current session, updates amp type and I/O parameters,
+     * then reconnects to the new address/port.
+     */
+    bool UpdateConnectionParameters(const juce::String& address,
+                                    std::uint16_t       port,
+                                    AmpType             ampType);
 
     //==============================================================================
-    bool SetPwrOnOff(const bool on) override;
-    bool SetChannelISP(const std::uint16_t channel, const bool isp) override;
-    bool SetChannelGR(const std::uint16_t channel, const bool gr) override;
-    bool SetChannelOVL(const std::uint16_t channel, const bool ovl) override;
-    bool SetChannelHeadroom(const std::uint16_t channel, const float headroom) override;
-    bool SetChannelMute(const std::uint16_t channel, const bool mute) override;
-    bool SetChannelGain(const std::uint16_t channel, const float gain) override;
+    bool SetPwrOnOff(bool on) override;
+    bool SetChannelISP(std::uint16_t channel, bool isp) override;
+    bool SetChannelGR(std::uint16_t channel, bool gr) override;
+    bool SetChannelOVL(std::uint16_t channel, bool ovl) override;
+    bool SetChannelHeadroom(std::uint16_t channel, float headroom) override;
+    bool SetChannelMute(std::uint16_t channel, bool mute) override;
+    bool SetChannelGain(std::uint16_t channel, float gain) override;
 
     //==============================================================================
-    void SetConnectionState(const NanoAmpControlInterface::ConnectionState state) override;
-
-protected:
-    //==============================================================================
-    void SetAmpType(const AmpType ampType);
-    AmpType GetAmpType();
-
-    //==============================================================================
-    bool ProcessReceivedOcp1Message(const juce::MemoryBlock& message);
-    bool CreateObjectSubscriptions();
-    bool QueryObjectValues();
-
-    //==============================================================================
-    void AddPendingSubscriptionHandle(const std::uint32_t handle);
-    bool PopPendingSubscriptionHandle(const std::uint32_t handle);
-    bool HasPendingSubscriptions();
-
-    //==============================================================================
-    void AddPendingGetValueHandle(const std::uint32_t handle, const std::uint32_t ONo);
-    const std::uint32_t PopPendingGetValueHandle(const std::uint32_t handle);
-    bool HasPendingGetValues();
+    void SetConnectionState(ConnectionState state) override;
 
 private:
     //==============================================================================
-    bool UpdateObjectValues(const NanoOcp1::Ocp1Notification* notifObj);
-    bool UpdateObjectValues(const std::uint32_t ONo, const NanoOcp1::Ocp1Response* responseObj);
+    static NanoOcp1::AmpController::AmpType toCtrlAmpType(AmpType t);
+    static ConnectionState fromCtrlState(NanoOcp1::Ocp1Controller::State s);
 
     //==============================================================================
-    std::unique_ptr<NanoOcp1::NanoOcp1Client>   m_nanoOcp1Client;
-    ConnectionState                             m_connectionState{ Unknown };
-    std::vector<std::uint32_t>                  m_pendingSubscriptionHandles;
-    std::map<std::uint32_t, std::uint32_t>      m_pendingGetValueHandlesWithONo;
-    AmpType                                     m_ampType;
-
+    std::unique_ptr<NanoOcp1::AmpController> m_amp;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoAmpControlProcessor)
 };
 
-}
+
+} // namespace NanoAmpControl
