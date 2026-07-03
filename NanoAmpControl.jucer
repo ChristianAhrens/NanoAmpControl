@@ -48,13 +48,18 @@
                 resource="0" file="submodules/JUCE-AppBasics/Source/ZeroconfDiscoverComponent.cpp"/>
           <FILE id="ZQHsW7" name="ZeroconfDiscoverComponent.h" compile="0" resource="0"
                 file="submodules/JUCE-AppBasics/Source/ZeroconfDiscoverComponent.h"/>
+          <FILE id="TSS001" name="ToggleStateSlider.cpp" compile="1" resource="0"
+                file="submodules/JUCE-AppBasics/Source/ToggleStateSlider.cpp"/>
+          <FILE id="TSS002" name="ToggleStateSlider.h" compile="0" resource="0"
+                file="submodules/JUCE-AppBasics/Source/ToggleStateSlider.h"/>
         </GROUP>
       </GROUP>
       <GROUP id="{3DC4FFDC-5D34-064E-0304-3452EC534EBB}" name="NanoOcp">
         <GROUP id="{D61B8334-ED08-4A47-0297-7A7E83EFCF1D}" name="Source">
           <FILE id="aREa29" name="NanoOcp1.cpp" compile="1" resource="0" file="submodules/NanoOcp/Source/NanoOcp1.cpp"/>
           <FILE id="L129fP" name="NanoOcp1.h" compile="0" resource="0" file="submodules/NanoOcp/Source/NanoOcp1.h"/>
-          <FILE id="xAmpC1" name="AmpController.cpp" compile="1" resource="0" file="submodules/NanoOcp/Source/AmpController.cpp"/>
+          <FILE id="xAmpC1" name="AmpController.cpp" compile="1" resource="0"
+                file="submodules/NanoOcp/Source/AmpController.cpp"/>
           <FILE id="xAmpH1" name="AmpController.h" compile="0" resource="0" file="submodules/NanoOcp/Source/AmpController.h"/>
           <FILE id="RxZDwC" name="Ocp1Connection.cpp" compile="1" resource="0"
                 file="submodules/NanoOcp/Source/Ocp1Connection.cpp"/>
@@ -64,12 +69,15 @@
                 file="submodules/NanoOcp/Source/Ocp1ConnectionServer.cpp"/>
           <FILE id="akg0SU" name="Ocp1ConnectionServer.h" compile="0" resource="0"
                 file="submodules/NanoOcp/Source/Ocp1ConnectionServer.h"/>
-          <FILE id="xCtrl1" name="Ocp1Controller.cpp" compile="1" resource="0" file="submodules/NanoOcp/Source/Ocp1Controller.cpp"/>
-          <FILE id="xCtrl2" name="Ocp1Controller.h" compile="0" resource="0" file="submodules/NanoOcp/Source/Ocp1Controller.h"/>
+          <FILE id="xCtrl1" name="Ocp1Controller.cpp" compile="1" resource="0"
+                file="submodules/NanoOcp/Source/Ocp1Controller.cpp"/>
+          <FILE id="xCtrl2" name="Ocp1Controller.h" compile="0" resource="0"
+                file="submodules/NanoOcp/Source/Ocp1Controller.h"/>
           <FILE id="qmHwXT" name="Ocp1DataTypes.cpp" compile="1" resource="0"
                 file="submodules/NanoOcp/Source/Ocp1DataTypes.cpp"/>
           <FILE id="YVGiqn" name="Ocp1DataTypes.h" compile="0" resource="0" file="submodules/NanoOcp/Source/Ocp1DataTypes.h"/>
-          <FILE id="xDS1h1" name="Ocp1DS100ObjectDefinitions.h" compile="0" resource="0" file="submodules/NanoOcp/Source/Ocp1DS100ObjectDefinitions.h"/>
+          <FILE id="xDS1h1" name="Ocp1DS100ObjectDefinitions.h" compile="0" resource="0"
+                file="submodules/NanoOcp/Source/Ocp1DS100ObjectDefinitions.h"/>
           <FILE id="lLZ1yR" name="Ocp1Message.cpp" compile="1" resource="0" file="submodules/NanoOcp/Source/Ocp1Message.cpp"/>
           <FILE id="YWSWEn" name="Ocp1Message.h" compile="0" resource="0" file="submodules/NanoOcp/Source/Ocp1Message.h"/>
           <FILE id="f8s27C" name="Ocp1ObjectDefinitions.h" compile="0" resource="0"
@@ -152,6 +160,7 @@
         <MODULEPATH id="juce_opengl" path="submodules/JUCE/modules"/>
         <MODULEPATH id="juce_dsp" path="submodules/JUCE/modules"/>
         <MODULEPATH id="juce_osc" path="submodules/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors_headless" path="submodules/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <XCODE_IPHONE targetFolder="Builds/iOS" smallIcon="gU6pke" iosDevelopmentTeamID="SB7Q3PP4FQ"
@@ -181,6 +190,7 @@
         <MODULEPATH id="juce_opengl" path="submodules/JUCE/modules"/>
         <MODULEPATH id="juce_dsp" path="submodules/JUCE/modules"/>
         <MODULEPATH id="juce_osc" path="submodules/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors_headless" path="submodules/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_IPHONE>
     <VS2022 targetFolder="Builds/VisualStudio2022" smallIcon="bKmtj9" bigIcon="bKmtj9">
@@ -204,6 +214,7 @@
         <MODULEPATH id="juce_gui_extra" path="submodules/JUCE/modules"/>
         <MODULEPATH id="juce_opengl" path="submodules/JUCE/modules"/>
         <MODULEPATH id="juce_osc" path="submodules/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors_headless" path="submodules/JUCE/modules"/>
       </MODULEPATHS>
     </VS2022>
     <LINUX_MAKE targetFolder="Builds/LinuxMakefile" smallIcon="bKmtj9" bigIcon="bKmtj9">
@@ -227,6 +238,7 @@
         <MODULEPATH id="juce_gui_extra" path="submodules/JUCE/modules"/>
         <MODULEPATH id="juce_opengl" path="submodules/JUCE/modules"/>
         <MODULEPATH id="juce_osc" path="submodules/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors_headless" path="submodules/JUCE/modules"/>
       </MODULEPATHS>
     </LINUX_MAKE>
   </EXPORTFORMATS>
@@ -235,6 +247,8 @@
     <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_audio_processors_headless" showAllCode="1" useLocalCopy="0"
+            useGlobalPath="0"/>
     <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>

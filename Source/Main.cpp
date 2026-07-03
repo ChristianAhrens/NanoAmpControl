@@ -19,7 +19,8 @@
 #include <JuceHeader.h>
 
 #include "MainComponent.h"
-#include "LookAndFeel.h"
+
+#include <CustomLookAndFeel.h>
 
 //==============================================================================
 class MainApplication  : public juce::JUCEApplication
@@ -136,7 +137,7 @@ public:
         {
             CommandLineParser cmdP(commandLine);
 
-            m_customLookAndFeel = std::unique_ptr<LookAndFeel>(new NanoAmpControl::DarkLookAndFeel);
+            m_customLookAndFeel = std::make_unique<JUCEAppBasics::CustomLookAndFeel>();
             juce::Desktop::getInstance().setDefaultLookAndFeel(m_customLookAndFeel.get());
             
             setUsingNativeTitleBar (true);
